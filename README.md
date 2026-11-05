@@ -58,7 +58,7 @@ Goku usa quadros de `assets/goku-original.png`, folha enviada pelo usuário, com
 
 A opção “Testar sprites” permite visualizar sequências separadamente e importar outras poses para experimentar na sessão. O combo aproxima o atacante do alvo e apresenta oito impactos visuais; o dano é aplicado uma única vez. Reiniciar cancela animações pendentes.
 
-Kamehameha e Super Kamehameha usam preparação, transformação visual, disparo e recuperação. A transformação visual da técnica não ativa a carta Super Saiyajin. O feixe preserva suas extremidades e estende o centro até o alvo. As alturas são 105 px para o comum e 195 px para o Super.
+Super Kamehameha usa preparação, transformação visual, disparo e recuperação. Sua transformação visual não ativa a carta Super Saiyajin. O Kamehameha comum na forma base usa a nova sequência sem transformação. O feixe preserva suas extremidades e estende o centro até o alvo. As alturas são 105 px para o comum e 195 px para o Super.
 
 Sem multiplayer, áudio, salvamento de partidas ou equipes nesta versão. As artes fornecidas e os personagens não constituem uma licença de distribuição comercial.
 
@@ -82,3 +82,5 @@ Selecione habilidade, personagem, forma inicial e defesa do alvo. Clique em Repr
 
 Rajada refeita com os arquivos “Rajada.zip” e “Projétil de Fogo Pixelado Brilhante.zip”: Goku base usa os seis quadros da nova folha JPG, com o clarão nativo integrado às poses de emissão. A nova arte PNG transparente é usada exclusivamente no projétil em voo. Os pivôs dos quadros são alinhados aos pés; o Canvas foi ampliado horizontalmente para evitar cortes no clarão. O arquivo original de cada arte é preservado. O SSJ e Vegeta mantêm seus conjuntos de poses anteriores com emissão separada. Mantidos quatro impactos de 5, custo de 2 ki e 1 ação.
 
+
+Kamehameha na forma base: nova animação de oito poses desenhada a partir das referências do usuário, em `assets/base-kame-atlas.png`. Goku permanece de cabelo preto durante preparação, carga azul, disparo e recuperação. A técnica na forma base não apresenta transformação temporária. Mantidos 4 ki, 2 ações e 50 de dano base. A carta usa uma pose nova; o laboratório inclui a sequência completa e as fases separadas. A forma SSJ e o Super Kamehameha preservam suas sequências anteriores.
