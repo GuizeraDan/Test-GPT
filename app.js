@@ -72,15 +72,15 @@ async function executeFourBlasts(side,index,token){
 }
 async function executeKamehameha(index,token,superPower=false){
  const source=$('goku'),dest=$('vegeta'),baseForm=!superPower&&!state.player.transformed;source.classList.toggle('base-kame',baseForm);source.classList.add('kame-preparing');source.classList.toggle('super-kame',superPower);$('lastAction').textContent=superPower?'Goku concentra todo seu ki… Super Kamehameha!':'Goku concentra o ki e libera seu poder…';
- await delay(baseForm?BASE_KAME_FRAMES.slice(0,4).reduce((sum,f)=>sum+f[4],0):1440);if(token!==generation)return;
+ await delay(baseForm?BASE_KAME_FRAMES.slice(0,BASE_KAME_CHARGE_FRAMES).reduce((sum,f)=>sum+f[4],0):1440);if(token!==generation)return;
  source.classList.remove('four-blasts','super-kame','kame-preparing');source.classList.add('kame-firing');$('lastAction').textContent='Kame… hame… HA!';
- await delay(baseForm?BASE_KAME_FRAMES[4][4]:540);if(token!==generation)return;
+ await delay(baseForm?BASE_KAME_FRAMES[BASE_KAME_CHARGE_FRAMES][4]:540);if(token!==generation)return;
  const beam=gokuAnimator.beam(superPower,baseForm);beam.className='battle-fx energy-beam original-beam'+(superPower?' super-kame-beam':'');document.querySelector('.battle').append(beam);
  await delay(220);if(token!==generation)return;
  const hp=state.enemy.hp;play(state,'player',index);render();if(superPower){dest.classList.add('hit');if(hp===state.enemy.hp)dest.classList.add('blocked');startSuperImpact(dest,token);}else dest.classList.add('hit',hp>state.enemy.hp?'impact':'blocked');
  $('effect').textContent=hp>state.enemy.hp?`−${hp-state.enemy.hp}`:'BLOQUEADO';$('effect').classList.remove('show');void $('effect').offsetWidth;$('effect').classList.add('show');
  await delay(superPower?800:480);if(token!==generation)return;beam.remove();dest.classList.remove('hit','impact','blocked');source.classList.remove('kame-firing');source.classList.add('kame-recovering');
- await delay(baseForm?BASE_KAME_FRAMES[4][4]:560);if(token!==generation)return;clearBattleFx();busy=false;render();
+ await delay(baseForm?BASE_KAME_FRAMES[BASE_KAME_CHARGE_FRAMES][4]:560);if(token!==generation)return;clearBattleFx();busy=false;render();
  if(state.winner&&!labMode){$('resultTitle').textContent='Você superou seus limites!';$('resultText').textContent=`Treino encerrado em ${state.round} rounds.`;$('resultDialog').showModal();}
 }
 async function executeContactCombo(side,index,token){
@@ -164,7 +164,7 @@ function makeGokuAnimator(){
   if(ready&&fighter.classList.contains('atlas-fighter')){
    const name=current();if(name!==active){active=name;started=t;}
    const base=baseKameSheet&&name.startsWith('baseKame');const native=rajadaSheet&&['kiBurst','rajadaPrepare','rajadaFire'].includes(name);
-   const frames=base?(name==='baseKameCharge'?BASE_KAME_FRAMES.slice(0,4):name==='baseKameFire'?BASE_KAME_FRAMES.slice(4):name==='baseKameRecover'?BASE_KAME_FRAMES.slice(4,5):BASE_KAME_FRAMES):native?(name==='rajadaPrepare'?RAJADA_FRAMES.slice(0,2):name==='rajadaFire'?RAJADA_FRAMES.slice(2):RAJADA_FRAMES):GOKU_CLIPS[name]||GOKU_CLIPS.idle;
+   const frames=base?(name==='baseKameCharge'?BASE_KAME_FRAMES.slice(0,BASE_KAME_CHARGE_FRAMES):name==='baseKameFire'?BASE_KAME_FRAMES.slice(BASE_KAME_CHARGE_FRAMES):name==='baseKameRecover'?BASE_KAME_FRAMES.slice(-1):BASE_KAME_FRAMES):native?(name==='rajadaPrepare'?RAJADA_FRAMES.slice(0,2):name==='rajadaFire'?RAJADA_FRAMES.slice(2):RAJADA_FRAMES):GOKU_CLIPS[name]||GOKU_CLIPS.idle;
    const duration=frames.reduce((a,f)=>a+f[4],0),loop=!!preview||['burstFire','idle','charge','beamCharge','ssjIdle','ssjCharge'].includes(name);let elapsed=loop?(t-started)%duration:Math.min(t-started,duration-1),frame=frames[0];
    for(const f of frames){frame=f;if(elapsed<f[4])break;elapsed-=f[4];}
    if(name==='rajadaFire'&&!preview)frame=frames[(Number(fighter.dataset.burstPose||0)%2)*2+(fighter.dataset.burstStage==='emit'?1:0)];
@@ -279,12 +279,13 @@ const rajadaReady=(async()=>{
 
 // Quadros e tempos exportados sem redesenho do arquivo Kamehameha.ase.
 var baseKameSheet,baseKameMetadata,baseKameCardData;
+const BASE_KAME_CHARGE_FRAMES=6;
 var BASE_KAME_FRAMES=[];
 const baseKameReady=(async()=>{
  const image=new Image();image.src='/assets/base-kame-ase.png';
  const [,metadata]=await Promise.all([image.decode(),fetch('/assets/base-kame-ase.json').then(response=>{if(!response.ok)throw new Error('Falha ao carregar os tempos do Kamehameha');return response.json();})]);
- if(metadata.frames.length!==6)throw new Error('A sequência configurada precisa de seis quadros');
+ if(metadata.frames.length<=BASE_KAME_CHARGE_FRAMES)throw new Error('A sequência precisa de quadros de carga e disparo');
  baseKameMetadata=metadata;BASE_KAME_FRAMES=metadata.frames.map((frame,index)=>[index,0,0,0,frame.duration]);baseKameSheet=image;
- const frame=metadata.frames[5],c=document.createElement('canvas');c.width=frame.width;c.height=frame.height;c.getContext('2d').drawImage(image,frame.x,frame.y,frame.width,frame.height,0,0,frame.width,frame.height);baseKameCardData=c.toDataURL();paintBaseKameCard();
+ const frame=metadata.frames.at(-1),c=document.createElement('canvas');c.width=frame.width;c.height=frame.height;c.getContext('2d').drawImage(image,frame.x,frame.y,frame.width,frame.height,0,0,frame.width,frame.height);baseKameCardData=c.toDataURL();paintBaseKameCard();const option=document.querySelector('#animationSelect option[value=baseKameAll]');if(option)option.textContent=`Kamehameha base · Aseprite (${metadata.frames.length} quadros)`;
 })();
 function paintBaseKameCard(){const art=document.querySelector('.art-beam .card-sprite');if(art&&baseKameCardData){art.style.backgroundImage='url("'+baseKameCardData+'")';art.style.backgroundSize='contain';art.style.backgroundPosition='center';}}
