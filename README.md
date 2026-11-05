@@ -114,3 +114,27 @@ Os originais estão em `assets/`. Para refazer as exportações:
 python tools/export_aseprite.py assets/Kienzan.ase assets/kienzan-disc
 python tools/export_aseprite.py "assets/Kienzan Throw.ase" assets/kienzan-throw
 ```
+
+### Saibaman · laboratório visual
+
+Em **Personagem → Saibaman · inimigo**, selecione uma das 18 animações e clique em Reproduzir. Pausa, avanço, velocidade, repetição e limpar teste funcionam também neste modo. Não há novas cartas nem dano de gameplay: o objetivo é inspecionar as animações. Ao trocar de personagem, o laboratório restaura as cartas existentes.
+
+O pacote contém 46 PNGs numerados e um arquivo vazio de crédito a thekrillmaster. Os nomes abaixo são interpretações visuais, pois não há metadados de ações ou duração. As sequências e tempos ajustáveis ficam em `SAIBA_CLIPS`, em `app.js`. Os originais são preservados em `assets/saibaman-original/`; `python tools/export_saibaman.py` gera o atlas transparente.
+
+| Sequência | Sprites originais |
+|---|---|
+| Idle / respiração sutil | 1 |
+| Rastejar e avanço | 2, 3, 7 |
+| Salto | 4, 5, 6, 8 |
+| Soco | 9, 10 |
+| Chutes | 11–14 |
+| Garras | 15–17 |
+| Esquiva | 18–19 |
+| Reação a dano e queda | 20–25 |
+| Disparo de ki e projétil | 26–29 |
+| Carga de ki com aura | 30–32 |
+| Raio de energia | 33–36 |
+| Jato de ácido | 37–40 |
+| Autodestruição, explosão e fumaça | 41–46 |
+
+O canvas espelha a arte uma única vez para enfrentar o jogador à esquerda. O espelhamento herdado do elemento Vegeta é desativado neste modo. Os golpes físicos aproximam o inimigo do jogador; os efeitos também apontam para a esquerda.

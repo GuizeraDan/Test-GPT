@@ -17,7 +17,7 @@ var burstArt={};
 let state=createGame(),generation=0,busy=false;const $=id=>document.getElementById(id);const types={'TÉCNICA':'technique','HABILIDADE':'ability','REAÇÃO':'reaction','TRANSFORMAÇÃO':'transformation'};
 function hud(f,enemy){return `<div class="fighter-hud ${enemy?'enemy':''}"><div class="hud-name">${f.form==='gogetaSSJ'?'GOGETA':f.name.toUpperCase()}<small>${enemy?'OPONENTE · CPU':'VOCÊ · JOGADOR 01'}</small></div><div class="hp-label"><span>VIDA</span><b>${f.hp} <span>/ 100</span></b></div><div class="hp-track" role="progressbar" aria-label="Vida de ${f.name}" aria-valuenow="${f.hp}" aria-valuemin="0" aria-valuemax="100"><div class="hp-fill" style="width:${f.hp}%"></div></div><div class="ki-row"><span>KI</span>${Array.from({length:8},(_,i)=>`<i class="ki-cell ${i<f.ki?'filled':''}"></i>`).join('')}<b>${f.ki}/8</b></div><div class="status">${[f.shield?`◈ Escudo ${f.shield}`:'',f.reaction?'↯ Reação preparada':'',f.form==='gogetaSSJ'?'✦ Gogeta Super Sayajin':f.transformed?'✦ Super Saiyajin':''].filter(Boolean).join(' · ')||'Forma base · Pronto para o combate'}</div></div>`;}
 function render(){ $('playerHud').innerHTML=hud(state.player,false);$('enemyHud').innerHTML=hud(state.enemy,true);$('round').textContent=`ROUND ${String(state.round).padStart(2,'0')}`;$('phase').textContent=state.winner?'FIM DO TREINO':state.turn==='player'?'SEU TURNO':'TURNO DA CPU';$('turnTitle').textContent=state.winner?'Treino concluído.':state.turn==='player'?'Sua vez de brilhar.':'Vegeta está planejando…';$('turnHint').textContent=state.turn==='player'?(state.actions?'Combine suas cartas. Encontre uma abertura.':'Suas ações acabaram. Encerre o turno para continuar.'):'Observe as técnicas do adversário e prepare sua resposta.';$('actions').innerHTML=`<b>${state.actions} / 2</b> AÇÕES`;$('endTurn').disabled=busy||state.turn!=='player'||!!state.winner;$('handCount').textContent=state.player.hand.length;$('deckCount').textContent=`▱ ${state.player.deck.length} NO BARALHO · ${state.player.discard.length} DESCARTE`;$('lastAction').textContent=state.log.at(-1);
-$('hand').replaceChildren();(labMode?Object.keys(CARDS):state.player.hand).forEach((key,i)=>{const c=CARDS[key],button=document.createElement('button');button.className=`card ${types[c.type]}`;button.disabled=busy||(!labMode&&!canPlay(state,'player',i));button.setAttribute('aria-label',`${c.name}, ${c.cost} ki, ${c.actions||1} ações. ${c.description}`);button.innerHTML=`<div class="card-top"><span>${c.type}</span><b class="cost">${c.cost}</b></div><div class="card-art art-${key}"><span class="card-sprite"></span><span>${c.icon}</span></div><h3>${c.name}</h3><p>${c.description}</p><div class="card-stats"><span>${c.cost} KI</span><span>${c.actions||1} ${(c.actions||1)===1?'AÇÃO':'AÇÕES'}</span>${c.damage?`<span>${c.damage} DANO</span>`:''}</div><span class="card-foot">${labMode?(busy?'REPRODUZINDO':'TESTAR ANIMAÇÃO'):c.transform&&(c.form==='gogetaSSJ'?state.player.form==='gogetaSSJ':state.player.transformed)?'JÁ TRANSFORMADO':c.reaction&&state.player.reaction?'REAÇÃO JÁ PREPARADA':state.player.ki<c.cost?'KI INSUFICIENTE':state.actions<(c.actions||1)?'AÇÕES INSUFICIENTES':(c.actions===2?'02 AÇÕES · ':'01 AÇÃO · ')+(c.damage?'OFENSIVA':c.reaction?'PREPARAR':'SUPORTE')}</span>`;button.onclick=()=>labMode?runLab(key):execute('player',i);$('hand').append(button);});if(!state.player.hand.length)$('hand').innerHTML='<p class="empty">Sem cartas na mão. Encerre o turno para comprar mais.</p>';for(const [side,id]of [['player','goku'],['enemy','vegeta']]){ $(id).classList.toggle('transformed',state[side].transformed);$(id).querySelector('.fighter-name').innerHTML=`${state[side].form==='gogetaSSJ'?'GOGETA':state[side].name.toUpperCase()} <span>${side==='player'?'VOCÊ':'CPU'}</span>`;$(id).classList.toggle('shielded',state[side].shield>0);$(id).classList.toggle('reaction-ready',state[side].reaction>0); };$('logList').replaceChildren(...state.log.map(t=>{const li=document.createElement('li');li.textContent=t;return li;}));if(gokuAnimator)gokuAnimator.cards();paintGogetaCard();paintKienzanCard();if(burstArt.projectile)paintBurstCard();if(baseKameCardData)paintBaseKameCard();if(labMode)renderLab();}
+$('hand').replaceChildren();(labMode&&$('labActor').value==='saibaman'?[]:labMode?Object.keys(CARDS):state.player.hand).forEach((key,i)=>{const c=CARDS[key],button=document.createElement('button');button.className=`card ${types[c.type]}`;button.disabled=busy||(!labMode&&!canPlay(state,'player',i));button.setAttribute('aria-label',`${c.name}, ${c.cost} ki, ${c.actions||1} ações. ${c.description}`);button.innerHTML=`<div class="card-top"><span>${c.type}</span><b class="cost">${c.cost}</b></div><div class="card-art art-${key}"><span class="card-sprite"></span><span>${c.icon}</span></div><h3>${c.name}</h3><p>${c.description}</p><div class="card-stats"><span>${c.cost} KI</span><span>${c.actions||1} ${(c.actions||1)===1?'AÇÃO':'AÇÕES'}</span>${c.damage?`<span>${c.damage} DANO</span>`:''}</div><span class="card-foot">${labMode?(busy?'REPRODUZINDO':'TESTAR ANIMAÇÃO'):c.transform&&(c.form==='gogetaSSJ'?state.player.form==='gogetaSSJ':state.player.transformed)?'JÁ TRANSFORMADO':c.reaction&&state.player.reaction?'REAÇÃO JÁ PREPARADA':state.player.ki<c.cost?'KI INSUFICIENTE':state.actions<(c.actions||1)?'AÇÕES INSUFICIENTES':(c.actions===2?'02 AÇÕES · ':'01 AÇÃO · ')+(c.damage?'OFENSIVA':c.reaction?'PREPARAR':'SUPORTE')}</span>`;button.onclick=()=>labMode?runLab(key):execute('player',i);$('hand').append(button);});if(!state.player.hand.length)$('hand').innerHTML='<p class="empty">Sem cartas na mão. Encerre o turno para comprar mais.</p>';for(const [side,id]of [['player','goku'],['enemy','vegeta']]){ $(id).classList.toggle('transformed',state[side].transformed);$(id).querySelector('.fighter-name').innerHTML=`${state[side].form==='gogetaSSJ'?'GOGETA':state[side].name.toUpperCase()} <span>${side==='player'?'VOCÊ':'CPU'}</span>`;$(id).classList.toggle('shielded',state[side].shield>0);$(id).classList.toggle('reaction-ready',state[side].reaction>0); };$('logList').replaceChildren(...state.log.map(t=>{const li=document.createElement('li');li.textContent=t;return li;}));if(gokuAnimator)gokuAnimator.cards();paintGogetaCard();paintKienzanCard();if(burstArt.projectile)paintBurstCard();if(baseKameCardData)paintBaseKameCard();if(labMode)renderLab();}
 async function execute(side,i){
  if(busy||!canPlay(state,side,i))return;
  const token=generation,key=state[side].hand[i],c=CARDS[key],target=side==='player'?'enemy':'player';
@@ -238,11 +238,13 @@ function startSuperImpact(target,token){
 }
 
 function prepareLabState(){
- const side=$('labActor').value,target=side==='player'?'enemy':'player';state.turn=side;state.actions=2;state.winner=null;state.player.hand=Object.keys(CARDS);state.enemy.hand=Object.keys(CARDS);state.player.ki=8;state.enemy.ki=8;state[side].form=$('labForm').value==='gogetaSSJ'?'gogetaSSJ':$('labForm').value==='ssj'?'ssj':null;state[side].transformed=!!state[side].form;
+ const side=$('labActor').value==='saibaman'?'enemy':$('labActor').value,target=side==='player'?'enemy':'player';state.turn=side;state.actions=2;state.winner=null;state.player.hand=Object.keys(CARDS);state.enemy.hand=Object.keys(CARDS);state.player.ki=8;state.enemy.ki=8;state[side].form=$('labForm').value==='gogetaSSJ'?'gogetaSSJ':$('labForm').value==='ssj'?'ssj':null;state[side].transformed=!!state[side].form;
+ if($('labActor').value==='saibaman'){state.enemy.name='Saibaman';state.enemy.form=null;state.enemy.transformed=false;}
  const defense=$('labDefense').value;state[target].shield=defense==='shield'?18:0;state[target].reaction=defense==='reaction'?15:0;
 }
 function renderLab(){
  $('round').textContent='LAB';$('handCount').textContent=Object.keys(CARDS).length;$('phase').textContent=busy?'ANIMAÇÃO EM CURSO':'TESTE LIVRE';$('turnTitle').textContent='Todas as cartas. Sem esperar turnos.';$('turnHint').textContent='Clique em uma carta ou use Reproduzir. O alvo é restaurado a cada teste.';$('actions').textContent='TESTE LIVRE';$('deckCount').textContent=`${Object.keys(CARDS).length} CARTAS DISPONÍVEIS`;$('labPlay').disabled=busy;$('labSkill').disabled=busy;$('labActor').disabled=busy;$('labForm').disabled=busy;$('labDefense').disabled=busy;
+ if($('labActor').value==='saibaman'){$('turnTitle').textContent='Saibaman · animações do inimigo';$('turnHint').textContent='Selecione uma animação no laboratório e clique em Reproduzir.';$('handCount').textContent='0';$('deckCount').textContent='SEM CARTAS · TESTE VISUAL';$('labForm').disabled=true;$('labDefense').disabled=true;document.querySelector('.lab-note').textContent='Selecione a animação do Saibaman acima. Use pausa, avanço por quadro e velocidade para inspecionar.';}else document.querySelector('.lab-note').textContent='Use as cartas abaixo para testar diretamente. Os controles alteram somente a reprodução.';
  $('labPause').textContent=animationClock.paused?'▶ Continuar':'Ⅱ Pausar';$('labStatus').textContent=animationClock.paused?'Pausado · use avanço para inspecionar':busy?'Reproduzindo…':'Pronto para testar';
 }
 function toggleLab(enabled){
@@ -251,6 +253,7 @@ function toggleLab(enabled){
  reset();$('labToggle').textContent=enabled?'Voltar à partida':'Laboratório de animações';
 }
 async function runLab(key=$('labSkill').value){
+ if($('labActor').value==='saibaman')return runSaibamanLab(key);
  if(!labMode||busy)return;animationClock.paused=false;$('labSkill').value=key;generation++;animationClock.cancelWaits();clearBattleFx();state=createGame();prepareLabState();const side=$('labActor').value;
  if(CARDS[key].transform){state[side].transformed=false;state[side].form=null;}const token=generation;const index=state[side].hand.indexOf(key);gokuAnimator?.clear();render();
  try{await execute(side,index);}catch(error){if(token!==generation)return;clearBattleFx();busy=false;render();$('labStatus').textContent='Erro ao reproduzir. Confira o histórico.';console.error(error);return;}
@@ -259,7 +262,7 @@ async function runLab(key=$('labSkill').value){
 }
 $('labSkill').replaceChildren(...Object.entries(CARDS).map(([key,card])=>{const option=document.createElement('option');option.value=key;option.textContent=card.name;return option;}));
 $('labToggle').onclick=()=>toggleLab(!labMode);$('labExit').onclick=()=>toggleLab(false);$('labPlay').onclick=()=>runLab();$('labPause').onclick=()=>{animationClock.paused=!animationClock.paused;renderLab();};$('labStep').onclick=()=>{animationClock.step();renderLab();};$('labReset').onclick=()=>{animationClock.paused=false;reset();};$('labSpeed').onchange=()=>{animationClock.speed=Number($('labSpeed').value);};
-for(const id of ['labActor','labForm','labDefense'])$(id).onchange=()=>reset();
+for(const id of ['labActor','labForm','labDefense'])$(id).onchange=()=>{if(id==='labActor')updateLabSkills();reset();};
 if(labMode)toggleLab(true);
 
 function spawnKiMuzzle(source,side){
@@ -398,4 +401,58 @@ async function executeKienzan(side,index,token){
  }
  clearBattleFx();busy=false;render();
  if(state.winner&&!labMode){$('resultTitle').textContent=state.winner==='player'?'Você superou seus limites!':'Vegeta levou este round.';$('resultText').textContent=`Treino encerrado em ${state.round} rounds.`;$('resultDialog').showModal();}
+}
+
+// Nomes interpretados visualmente; o pacote original só numera as imagens.
+const SAIBA_CLIPS={
+ idle:{name:'Postura / Idle',frames:[1],ms:900},
+ crawl:{name:'Rastejar',frames:[2,3,2,3],ms:120,move:true},
+ dash:{name:'Avanço rápido',frames:[3,7,3,7,3],ms:100,move:true},
+ jump:{name:'Salto e aterrissagem',frames:[4,5,6,8,5,4,1],ms:120,jump:true},
+ punch:{name:'Soco',frames:[9,10,9,10,1],ms:130,contact:true},
+ kick:{name:'Combo de chutes',frames:[11,12,13,14,1],ms:140,contact:true},
+ claws:{name:'Golpes de garra',frames:[15,16,17,1],ms:150,contact:true},
+ evade:{name:'Esquiva',frames:[18,19,18,1],ms:140},
+ hurt:{name:'Receber golpes',frames:[20,21,22,23,24,1],ms:130},
+ fall:{name:'Queda / nocaute',frames:[22,24,25,25,1],ms:180},
+ ki:{name:'Disparo de ki',frames:[26,27,26,27,1],ms:150,projectile:true},
+ charge:{name:'Carregar ki com aura',frames:[30,31,32,31,30,32],ms:150},
+ beam:{name:'Raio de energia',frames:[33,34,35,35,1],ms:180,beam:true},
+ acid:{name:'Jato de ácido',frames:[37,38,39,40,37,1],ms:160,acid:true},
+ explode:{name:'Autodestruição e fumaça',frames:[41,42,43,44,46,45,45],ms:170,explode:true},
+ kiFx:{name:'Efeito · projétil de ki',frames:[28,29,28,29],ms:150,fx:true},
+ beamFx:{name:'Efeito · raio de energia',frames:[36],ms:900,fx:true},
+ explosionFx:{name:'Efeito · explosão e fumaça',frames:[46,45,45],ms:220,fx:true}
+};
+var saibaArt,saibaFrames,saibaPlayback=null;
+const saibaReady=(async()=>{const im=new Image();im.src='/assets/saibaman-atlas.png';const [,frames]=await Promise.all([im.decode(),fetch('/assets/saibaman-atlas.json').then(r=>{if(!r.ok)throw Error('Falha ao carregar Saibaman');return r.json();})]);saibaArt=im;saibaFrames=frames;})();
+function updateLabSkills(){const entries=$('labActor').value==='saibaman'?SAIBA_CLIPS:CARDS;$('labSkill').replaceChildren(...Object.entries(entries).map(([key,c])=>{const o=document.createElement('option');o.value=key;o.textContent=c.name;return o;}));}
+function drawSaiba(ctx,n,x,y,scale=4.5){const f=saibaFrames[n];ctx.imageSmoothingEnabled=false;ctx.drawImage(saibaArt,f.x,f.y,f.w,f.h,x-f.pivot*scale,y-f.h*scale,f.w*scale,f.h*scale);}
+const saibaCanvas=document.createElement('canvas');saibaCanvas.className='saibaman-frames';saibaCanvas.width=768;saibaCanvas.height=512;$('vegeta').append(saibaCanvas);
+function saibaTick(){
+ const visible=labMode&&$('labActor').value==='saibaman'&&!!saibaArt;$('vegeta').classList.toggle('saibaman-visible',visible);document.body.classList.toggle('saibaman-lab',visible);
+ if(visible){const p=saibaPlayback&&saibaPlayback.token===generation?saibaPlayback:null,c=p?SAIBA_CLIPS[p.key]:SAIBA_CLIPS.idle,index=p?Math.min(c.frames.length-1,Math.floor((animationClock.time-p.start)/c.ms)):0,n=c.frames[index];const ctx=saibaCanvas.getContext('2d');ctx.clearRect(0,0,768,512);ctx.save();ctx.translate(768,0);ctx.scale(-1,1);
+ const z=n===36?3.5:[30,31,32].includes(n)?5.8:4.5;drawSaiba(ctx,n,384,494+(!p||p.key==='idle'?Math.sin(animationClock.time/250)*1.2:0),z);ctx.restore();saibaCanvas.dataset.frame=String(n);saibaCanvas.dataset.clip=p?p.key:'idle';saibaCanvas.dataset.facing='left';
+ }requestAnimationFrame(saibaTick);
+}requestAnimationFrame(saibaTick);
+function saibaEffect(n,from,to,duration,token){
+ const canvas=document.createElement('canvas');canvas.width=256;canvas.height=128;canvas.className='battle-fx saibaman-effect';document.querySelector('.battle').append(canvas);const start=animationClock.time;
+ function tick(){if(token!==generation||!canvas.isConnected){canvas.remove();return;}const t=Math.min(1,(animationClock.time-start)/duration);canvas.style.left=(from.x+(to.x-from.x)*t-64)+'px';canvas.style.top=(from.y+(to.y-from.y)*t-32)+'px';const ctx=canvas.getContext('2d');ctx.clearRect(0,0,256,128);ctx.save();ctx.translate(256,0);ctx.scale(-1,1);const f=saibaFrames[n===28?(Math.floor((animationClock.time-start)/100)%2?29:28):n];ctx.imageSmoothingEnabled=false;ctx.drawImage(saibaArt,f.x,f.y,f.w,f.h,0,0,256,128);ctx.restore();if(t<1)requestAnimationFrame(tick);}
+ tick();return canvas;
+}
+async function runSaibamanLab(key){
+ if(!labMode||busy||!SAIBA_CLIPS[key])return;animationClock.paused=false;generation++;animationClock.cancelWaits();clearBattleFx();state=createGame();prepareLabState();const token=generation,c=SAIBA_CLIPS[key];busy=true;render();
+ try{
+ await saibaReady;if(token!==generation)return;const actor=$('vegeta'),target=$('goku');const stage=document.querySelector('.battle').getBoundingClientRect(),a=actor.getBoundingClientRect(),b=target.getBoundingClientRect();let movement;
+ if(c.contact||c.move||c.explode||c.acid){const gap=c.acid?230:75,travel=b.left+b.width/2+gap-(a.left+a.width/2);movement=animateGame(actor,[{translate:'0px 0px'},{translate:travel+'px 0px'}],{duration:240,fill:'forwards',easing:'ease-out'});comboMotions.add(movement);await delay(240);if(token!==generation)return;}
+ if(c.jump){movement=animateGame(actor,[{translate:'0px 0px'},{translate:'0px -85px',offset:.5},{translate:'0px 0px'}],{duration:c.frames.length*c.ms});comboMotions.add(movement);}
+ saibaPlayback={key,start:animationClock.time,token};
+ for(let i=0;i<c.frames.length;i++){
+  if(token!==generation)return;
+  if((c.contact&&i>0&&i<c.frames.length-1)||(c.acid&&i===3)||(c.explode&&i===4)){const r=target.getBoundingClientRect(),spark=document.createElement('div');spark.className='battle-fx contact-spark';spark.style.left=(r.left-stage.left+r.width/2)+'px';spark.style.top=(r.top-stage.top+68)+'px';document.querySelector('.battle').append(spark);spark.addEventListener('animationend',()=>spark.remove(),{once:true});target.classList.remove('hit');void target.offsetWidth;target.classList.add('hit');}
+  if((c.projectile&&i===1)||(c.beam&&i===2)){const from={x:a.left-stage.left+a.width/2-40,y:a.top-stage.top+68},to={x:b.left-stage.left+b.width/2,y:b.top-stage.top+68};const fx=saibaEffect(c.beam?36:28,from,to,c.ms,token);await delay(c.ms);if(token!==generation)return;fx.remove();target.classList.add('hit');}else await delay(c.ms);
+ }
+ if(token!==generation)return;saibaPlayback=null;if(movement){movement.cancel();comboMotions.delete(movement);}clearBattleFx();busy=false;render();$('labStatus').textContent='Animação concluída · sem consumo de cartas';
+ if($('labRepeat').checked){await delay(600);if(token===generation&&labMode)runSaibamanLab(key);}
+ }catch(error){if(token!==generation)return;saibaPlayback=null;clearBattleFx();busy=false;render();$('labStatus').textContent='Não foi possível carregar Saibaman.';console.error(error);}
 }
