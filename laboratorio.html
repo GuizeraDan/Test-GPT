@@ -509,16 +509,15 @@ async function executeKienzan(side,index,token){
  const source=$(side==='player'?'goku':'vegeta'),dest=$(side==='player'?'vegeta':'goku'),target=side==='player'?'enemy':'player',direction=side==='player'?1:-1;
  try{await kienzanReady;}catch{if(token!==generation)return;clearBattleFx();busy=false;render();$('lastAction').textContent='Não foi possível carregar as animações do Kienzan.';return;}if(token!==generation)return;
  const native=side==='player'&&!state.player.transformed,arena=document.querySelector('.battle').getBoundingClientRect(),a=source.getBoundingClientRect(),b=dest.getBoundingClientRect(),center=a.left-arena.left+a.width/2;
- source.dataset.kienzanStart=String(animationClock.time);source.classList.add('kienzan-casting','charging');$('lastAction').textContent='Concentrando ki para formar o Kienzan…';
- const overhead={x:center,y:a.top-arena.top-12},held=native?null:spawnKienzanDisc(side,token,overhead,overhead);
- // O sétimo quadro inicia o gesto de lançamento no arquivo original.
- await delay(kienzanArt.throw.metadata.frames.slice(0,6).reduce((n,f)=>n+f.duration,0));if(token!==generation)return;
- held?.remove();source.classList.remove('charging');source.classList.add('firing');
- const start={x:center+direction*42,y:a.top-arena.top+55},end={x:b.left-arena.left+b.width/2,y:b.top-arena.top+68},shots=CARDS.kienzan.projectiles;
+ const overhead={x:center,y:a.top-arena.top-12},start={x:center+direction*42,y:a.top-arena.top+55},end={x:b.left-arena.left+b.width/2,y:b.top-arena.top+68},shots=CARDS.kienzan.projectiles;
  const preparation=kienzanArt.throw.metadata.frames.slice(0,6).reduce((n,f)=>n+f.duration,0);
  for(let shot=0;shot<shots;shot++){
-  // Repete o gesto de lançamento (quadros 7–9) para cada disco.
-  source.dataset.kienzanStart=String(animationClock.time-preparation);$('lastAction').textContent=`Kienzan! Disco ${shot+1}/${shots}.`;
+  // Reinicia os nove quadros: preparação, disco sobre a cabeça e arremesso.
+  source.dataset.kienzanShot=String(shot+1);source.dataset.kienzanStart=String(animationClock.time);source.classList.remove('firing');source.classList.add('kienzan-casting','charging');
+  $('lastAction').textContent=`Formando o Kienzan ${shot+1}/${shots}…`;
+  const held=native?null:spawnKienzanDisc(side,token,overhead,overhead);
+  await delay(preparation);if(token!==generation)return;
+  held?.remove();source.classList.remove('charging');source.classList.add('firing');$('lastAction').textContent=`Kienzan! Disco ${shot+1}/${shots}.`;
   const disc=spawnKienzanDisc(side,token,start,end,380);disc.dataset.shot=String(shot+1);
   await delay(380);if(token!==generation)return;disc.remove();
   let damage=0;
