@@ -162,18 +162,19 @@ function makeGokuAnimator(){
  function tick(){
   const t=animationClock.time;
   if(ready&&fighter.classList.contains('atlas-fighter')){
-   const name=current();if(name!==active||(name==='idle'&&idleSheet&&canvas.dataset.source!=='idle-ase')){active=name;started=t;}
-   const idle=idleSheet&&name==='idle';const base=baseKameSheet&&name.startsWith('baseKame');const native=rajadaSheet&&['kiBurst','rajadaPrepare','rajadaFire'].includes(name);
-   const frames=idle?IDLE_FRAMES:base?(name==='baseKameCharge'?BASE_KAME_FRAMES.slice(0,BASE_KAME_CHARGE_FRAMES):name==='baseKameFire'?BASE_KAME_FRAMES.slice(BASE_KAME_CHARGE_FRAMES):name==='baseKameRecover'?BASE_KAME_FRAMES.slice(-1):BASE_KAME_FRAMES):native?(name==='rajadaPrepare'?RAJADA_FRAMES.slice(0,2):name==='rajadaFire'?RAJADA_FRAMES.slice(2):RAJADA_FRAMES):GOKU_CLIPS[name]||GOKU_CLIPS.idle;
+   const name=current();if(name!==active||(name==='idle'&&idleSheet&&canvas.dataset.source!=='idle-ase')||(name==='ssjIdle'&&ssjIdleSheet&&canvas.dataset.source!=='ssj-idle-ase')){active=name;started=t;}
+   const idle=idleSheet&&name==='idle';const ssjIdle=ssjIdleSheet&&name==='ssjIdle';const base=baseKameSheet&&name.startsWith('baseKame');const native=rajadaSheet&&['kiBurst','rajadaPrepare','rajadaFire'].includes(name);
+   const frames=ssjIdle?SSJ_IDLE_FRAMES:idle?IDLE_FRAMES:base?(name==='baseKameCharge'?BASE_KAME_FRAMES.slice(0,BASE_KAME_CHARGE_FRAMES):name==='baseKameFire'?BASE_KAME_FRAMES.slice(BASE_KAME_CHARGE_FRAMES):name==='baseKameRecover'?BASE_KAME_FRAMES.slice(-1):BASE_KAME_FRAMES):native?(name==='rajadaPrepare'?RAJADA_FRAMES.slice(0,2):name==='rajadaFire'?RAJADA_FRAMES.slice(2):RAJADA_FRAMES):GOKU_CLIPS[name]||GOKU_CLIPS.idle;
    const duration=frames.reduce((a,f)=>a+f[4],0),loop=!!preview||['burstFire','idle','charge','beamCharge','ssjIdle','ssjCharge'].includes(name);let elapsed=loop?(t-started)%duration:Math.min(t-started,duration-1),frame=frames[0];
    for(const f of frames){frame=f;if(elapsed<f[4])break;elapsed-=f[4];}
    if(name==='rajadaFire'&&!preview)frame=frames[(Number(fighter.dataset.burstPose||0)%2)*2+(fighter.dataset.burstStage==='emit'?1:0)];
    const frameIndex=frames.indexOf(frame);ctx.clearRect(0,0,canvas.width,canvas.height);ctx.imageSmoothingEnabled=false;
-   if(idle){const rect=idleMetadata.frames[frame[0]],destH=224,destW=destH*rect.width/rect.height;ctx.drawImage(idleSheet,rect.x,rect.y,rect.width,rect.height,canvas.width/2-destW/2,canvas.height-18-destH,destW,destH);}
+   if(ssjIdle){const rect=ssjIdleMetadata.frames[frame[0]],destH=224,destW=destH*rect.width/rect.height;ctx.drawImage(ssjIdleSheet,rect.x,rect.y,rect.width,rect.height,canvas.width/2-destW/2,canvas.height-18-destH,destW,destH);}
+   else if(idle){const rect=idleMetadata.frames[frame[0]],destH=224,destW=destH*rect.width/rect.height;ctx.drawImage(idleSheet,rect.x,rect.y,rect.width,rect.height,canvas.width/2-destW/2,canvas.height-18-destH,destW,destH);}
    else if(base){const rect=baseKameMetadata.frames[frame[0]],destH=224,destW=destH*rect.width/rect.height;ctx.drawImage(baseKameSheet,rect.x,rect.y,rect.width,rect.height,canvas.width/2-destW/2,canvas.height-18-destH,destW,destH);}
    else if(native){const [x,y,w,h,,anchor]=frame,z=256/180;ctx.drawImage(rajadaSheet,x,y,w,h,canvas.width/2-(anchor-x)*z,canvas.height-18-h*z,w*z,h*z);}
    else{const tex=frameTexture(frame),scale=sheet.naturalWidth/731,z=256/48/scale,anchor=(frame[5]===undefined?frame[2]/2:frame[5]-frame[0])*scale;ctx.drawImage(tex,canvas.width/2-anchor*z,canvas.height-18-tex.height*z,tex.width*z,tex.height*z);}
-   const muzzleVisible=native&&(name==='rajadaFire'?frameIndex%2===1:name==='kiBurst'&&[3,5].includes(frameIndex));canvas.dataset.muzzle=muzzleVisible?'native-sheet':'none';canvas.dataset.clip=name;canvas.dataset.frame=String(frameIndex);canvas.dataset.source=idle?'idle-ase':base?'base-kame-ase':native?'rajada-sheet':'goku-sheet';
+   const muzzleVisible=native&&(name==='rajadaFire'?frameIndex%2===1:name==='kiBurst'&&[3,5].includes(frameIndex));canvas.dataset.muzzle=muzzleVisible?'native-sheet':'none';canvas.dataset.clip=name;canvas.dataset.frame=String(frameIndex);canvas.dataset.source=ssjIdle?'ssj-idle-ase':idle?'idle-ase':base?'base-kame-ase':native?'rajada-sheet':'goku-sheet';
    const pc=$('animationPreview');if(pc&&$('spriteDialog').open){const context=pc.getContext('2d');context.clearRect(0,0,pc.width,pc.height);context.imageSmoothingEnabled=false;context.drawImage(canvas,0,0);if(muzzleVisible&&burstArt.projectile){const shot=burstArt.projectile,h=42,w=h*shot.width/shot.height;context.drawImage(shot,390,canvas.height-18-21.5*256/48-h/2,w,h);}$('animationFrame').textContent=`Quadro ${frameIndex+1} / ${frames.length}`;}
   }requestAnimationFrame(tick);
  }
@@ -299,4 +300,14 @@ const idleReady=(async()=>{
  const [,metadata]=await Promise.all([image.decode(),fetch('/assets/goku-idle-ase.json').then(response=>{if(!response.ok)throw new Error('Falha ao carregar os tempos da postura');return response.json();})]);
  if(!metadata.frames.length)throw new Error('A animação de postura está vazia');idleMetadata=metadata;IDLE_FRAMES=metadata.frames.map((frame,index)=>[index,0,0,0,frame.duration]);idleSheet=image;
  const option=document.querySelector('#animationSelect option[value=idle]');if(option)option.textContent=`Postura · Idle.ase (${metadata.frames.length} quadros)`;
+})();
+
+// Postura enquanto Goku está transformado: arquivo original Idle SSJ.ase.
+var ssjIdleSheet,ssjIdleMetadata;
+var SSJ_IDLE_FRAMES=[];
+const ssjIdleReady=(async()=>{
+ const image=new Image();image.src='/assets/goku-ssj-idle-ase.png';
+ const [,metadata]=await Promise.all([image.decode(),fetch('/assets/goku-ssj-idle-ase.json').then(response=>{if(!response.ok)throw new Error('Falha ao carregar os tempos da postura SSJ');return response.json();})]);
+ if(!metadata.frames.length)throw new Error('A postura SSJ está vazia');ssjIdleMetadata=metadata;SSJ_IDLE_FRAMES=metadata.frames.map((frame,index)=>[index,0,0,0,frame.duration]);ssjIdleSheet=image;
+ const option=document.querySelector('#animationSelect option[value=ssjIdle]');if(option)option.textContent=`Postura SSJ · Idle SSJ.ase (${metadata.frames.length} quadros)`;
 })();
