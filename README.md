@@ -117,7 +117,7 @@ python tools/export_aseprite.py "assets/Kienzan Throw.ase" assets/kienzan-throw
 
 ### Saibaman · laboratório visual
 
-Em **Personagem → Saibaman · inimigo**, selecione uma das 18 animações e clique em Reproduzir. Pausa, avanço, velocidade, repetição e limpar teste funcionam também neste modo. Não há novas cartas nem dano de gameplay: o objetivo é inspecionar as animações. Ao trocar de personagem, o laboratório restaura as cartas existentes.
+O laboratório abre com **Oponente → Saibaman** e **Animar → Oponente**. Selecione uma das 18 animações e clique em Reproduzir. Pausa, avanço, velocidade, repetição e limpar teste funcionam também neste modo. Não há novas cartas nem dano de gameplay: o objetivo é inspecionar as animações. Use **Animar → Goku** para testar cartas contra o inimigo selecionado. **Oponente → Vegeta** restaura o adversário anterior.
 
 O pacote contém 46 PNGs numerados e um arquivo vazio de crédito a thekrillmaster. Os nomes abaixo são interpretações visuais, pois não há metadados de ações ou duração. As sequências e tempos ajustáveis ficam em `SAIBA_CLIPS`, em `app.js`. Os originais são preservados em `assets/saibaman-original/`; `python tools/export_saibaman.py` gera o atlas transparente.
 
