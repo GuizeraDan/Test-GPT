@@ -12,6 +12,7 @@ async function execute(side,i){
  const token=generation,key=state[side].hand[i],c=CARDS[key],target=side==='player'?'enemy':'player';
  const source=$(side==='player'?'goku':'vegeta'),dest=$(side==='player'?'vegeta':'goku');
  busy=true;source.dataset.move=key;render();
+ if(key==='superBeam'){try{await superImpactReady;}catch{busy=false;clearBattleFx();render();$('lastAction').textContent='Não foi possível carregar a explosão do Super Kamehameha.';return;}if(token!==generation)return;}
  const beam=key==='beam'||key==='superBeam',ranged=beam||key==='blast',originalCombo=side==='player'&&key==='strike'&&!state.player.transformed&&gokuAnimator?.ready(),originalBurst=side==='player'&&key==='blast'&&!state.player.transformed&&gokuAnimator?.ready();
  if(side==='player'&&(key==='beam'||key==='superBeam')&&gokuAnimator?.ready()){await executeKamehameha(i,token,key==='superBeam');return;}
  if(key==='blast'){await executeFourBlasts(side,i,token);return;}
@@ -25,11 +26,11 @@ async function execute(side,i){
  if(originalBurst){await delay(330);if(token!==generation)return;spawnKiBurst();}
  if(key==='strike'&&!originalCombo)source.classList.add('attacking');
  await delay(ranged?220:key==='strike'?180:0);if(token!==generation)return;
- const hp=state[target].hp;play(state,side,i);render();
+ const hp=state[target].hp;play(state,side,i);render();if(key==='superBeam')startSuperImpact(dest,token);
  if(c.damage){dest.classList.add('hit');if(hp>state[target].hp)dest.classList.add('impact');else dest.classList.add('blocked');$('effect').textContent=hp-state[target].hp?`−${hp-state[target].hp}`:'BLOQUEADO';}
  else $('effect').textContent=c.transform?'SUPER SAIYAJIN':c.ki?'+2 KI':c.reaction?'REAÇÃO PRONTA':'+18 ESCUDO';
  $('effect').classList.remove('show');void $('effect').offsetWidth;$('effect').classList.add('show');
- await delay(beam?650:ranged?400:450);if(token!==generation)return;
+ await delay(key==='superBeam'?1180:beam?650:ranged?400:450);if(token!==generation)return;
  clearBattleFx();busy=false;render();
  if(state.winner){$('resultTitle').textContent=state.winner==='player'?'Você superou seus limites!':'Vegeta levou este round.';$('resultText').textContent=`Treino encerrado em ${state.round} rounds. ${state.winner==='player'?'Boa combinação de cartas e ki.':'Prepare suas defesas antes de gastar todo o ki.'}`;$('resultDialog').showModal();}
 }
@@ -63,7 +64,7 @@ async function executeKamehameha(index,token,superPower=false){
  await delay(540);if(token!==generation)return;
  const beam=gokuAnimator.beam(superPower);beam.className='battle-fx energy-beam original-beam'+(superPower?' super-kame-beam':'');document.querySelector('.battle').append(beam);
  await delay(220);if(token!==generation)return;
- const hp=state.enemy.hp;play(state,'player',index);render();dest.classList.add('hit',hp>state.enemy.hp?'impact':'blocked');
+ const hp=state.enemy.hp;play(state,'player',index);render();if(superPower){dest.classList.add('hit');if(hp===state.enemy.hp)dest.classList.add('blocked');startSuperImpact(dest,token);}else dest.classList.add('hit',hp>state.enemy.hp?'impact':'blocked');
  $('effect').textContent=hp>state.enemy.hp?`−${hp-state.enemy.hp}`:'BLOQUEADO';$('effect').classList.remove('show');void $('effect').offsetWidth;$('effect').classList.add('show');
  await delay(superPower?800:480);if(token!==generation)return;beam.remove();dest.classList.remove('hit','impact','blocked');source.classList.remove('kame-firing');source.classList.add('kame-recovering');
  await delay(560);if(token!==generation)return;clearBattleFx();busy=false;render();
@@ -179,3 +180,23 @@ const burstArtReady=Promise.all(['projectile','impact'].map(async kind=>{
 })).then(()=>paintBurstCard());
 function makeBurstArt(kind){const art=burstArt[kind],canvas=document.createElement('canvas');canvas.width=art.width;canvas.height=art.height;canvas.getContext('2d').drawImage(art,0,0);canvas.dataset.art=kind;return canvas;}
 function paintBurstCard(){const art=document.querySelector('.art-blast .card-sprite');if(art&&burstArt.projectile){art.style.backgroundImage='url("'+burstArt.projectile.toDataURL()+'")';art.style.backgroundSize='58px auto';art.style.backgroundPosition='center';}}
+
+// Folha de explosão original: cinco colunas e duas linhas.
+var superImpactSheet;
+const superImpactReady=(async()=>{
+ const image=new Image();image.src='/assets/super-impact-original.png';await image.decode();
+ const sheet=document.createElement('canvas');sheet.width=image.naturalWidth;sheet.height=image.naturalHeight;const ctx=sheet.getContext('2d',{willReadFrequently:true});ctx.drawImage(image,0,0);
+ // O PNG contém resíduo de alfa quase transparente fora dos efeitos.
+ const data=ctx.getImageData(0,0,sheet.width,sheet.height);for(let i=3;i<data.data.length;i+=4)if(data.data[i]<=8)data.data[i]=0;ctx.putImageData(data,0,0);superImpactSheet=sheet;
+})();
+function startSuperImpact(target,token){
+ const arena=document.querySelector('.battle'),bounds=arena.getBoundingClientRect(),body=target.getBoundingClientRect();
+ const canvas=document.createElement('canvas');canvas.width=400;canvas.height=400;canvas.className='battle-fx super-impact';canvas.dataset.frame='0';
+ const size=Math.min(350,bounds.height*.76,bounds.width*.58);canvas.style.width=size+'px';canvas.style.height=size+'px';canvas.style.left=(body.left-bounds.left+body.width/2)+'px';canvas.style.top=(body.top-bounds.top+75)+'px';arena.append(canvas);
+ const ctx=canvas.getContext('2d');ctx.imageSmoothingEnabled=false;
+ const times=[65,65,80,90,100,110,120,140,150,180],duration=times.reduce((a,b)=>a+b,0);let start;
+ function tick(now){if(token!==generation||!canvas.isConnected){canvas.remove();return;}if(start===undefined)start=now;let elapsed=now-start;if(elapsed>=duration){canvas.remove();return;}let index=0;while(index<times.length-1&&elapsed>=times[index]){elapsed-=times[index];index++;}
+  const column=index%5,row=Math.floor(index/5),x=Math.round(column*superImpactSheet.width/5),right=Math.round((column+1)*superImpactSheet.width/5),y=Math.round(row*superImpactSheet.height/2),bottom=Math.round((row+1)*superImpactSheet.height/2);
+  ctx.clearRect(0,0,400,400);ctx.drawImage(superImpactSheet,x,y,right-x,bottom-y,0,0,400,400);canvas.dataset.frame=String(index);requestAnimationFrame(tick);
+ }requestAnimationFrame(tick);return canvas;
+}
