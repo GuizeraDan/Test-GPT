@@ -47,19 +47,19 @@ async function execute(side,i){
 }
 async function executeFourBlasts(side,index,token){
  const source=$(side==='player'?'goku':'vegeta'),dest=$(side==='player'?'vegeta':'goku');
- try{await burstArtReady;}catch{clearBattleFx();busy=false;render();$('lastAction').textContent='Não foi possível carregar as artes da Rajada de Ki.';return;}if(token!==generation)return;source.classList.add('charging');await delay(280);if(token!==generation)return;
+ try{await Promise.all([burstArtReady,rajadaReady]);}catch{clearBattleFx();busy=false;render();$('lastAction').textContent='Não foi possível carregar as artes da Rajada de Ki.';return;}if(token!==generation)return;source.classList.add('charging');await delay(280);if(token!==generation)return;
  if(!beginBurst(state,side,index)){busy=false;clearBattleFx();render();return;}render();
  source.classList.remove('charging');source.classList.add('firing','four-blasts');
  for(let shot=0;shot<4;shot++){
   if(token!==generation)return;
-  source.dataset.burstPose=String(shot%2);const muzzle=spawnKiMuzzle(source,side);await delay(100);if(token!==generation)return;
+  source.dataset.burstPose=String(shot%2);source.dataset.burstStage='ready';await delay(90);if(token!==generation)return;source.dataset.burstStage='emit';const native=side==='player'&&!state.player.transformed;const muzzle=native?null:spawnKiMuzzle(source,side);await delay(70);if(token!==generation)return;
   const projectile=makeBurstArt('projectile');
   projectile.className='battle-fx burst-shot'+(side==='enemy'?' reverse':'');
   const stage=document.querySelector('.battle'),a=stage.getBoundingClientRect(),from=source.getBoundingClientRect(),to=dest.getBoundingClientRect(),direction=side==='player'?1:-1;
-  const shotWidth=38,shotHeight=32;const start=from.left-a.left+from.width/2+direction*72-shotWidth/2,end=to.left-a.left+to.width/2-shotWidth/2;
+  const shotWidth=44,shotHeight=34;const start=from.left-a.left+from.width/2+direction*(native?144:72)-shotWidth/2,end=to.left-a.left+to.width/2-shotWidth/2;
   projectile.style.top=(from.top-a.top+68-shotHeight/2)+'px';stage.append(projectile);
   const flight=animateGame(projectile,[{left:start+'px'},{left:end+'px'}],{duration:220,easing:'linear',fill:'forwards'});comboMotions.add(flight);
-  await delay(80);if(token!==generation)return;muzzle.remove();await delay(140);if(token!==generation)return;flight.cancel();comboMotions.delete(flight);projectile.remove();
+  await delay(80);if(token!==generation)return;muzzle?.remove();source.dataset.burstStage='ready';await delay(140);if(token!==generation)return;flight.cancel();comboMotions.delete(flight);projectile.remove();
   const result=resolveBurstHit(state);if(!result)return;render();
   const flash=animateGame(dest,[{filter:'brightness(2.3)',translate:direction*6+'px 0px'},{filter:'brightness(1)',translate:'0px 0px'}],{duration:150});comboMotions.add(flash);flash.onfinish=()=>comboMotions.delete(flash);
   const spark=makeBurstArt('impact');spark.className='battle-fx burst-impact'+(result.blocked?' guarded':'');spark.style.left=(to.left-a.left+to.width/2)+'px';spark.style.top=(to.top-a.top+68)+'px';stage.append(spark);spark.onanimationend=()=>spark.remove();
@@ -148,7 +148,7 @@ const GOKU_CLIPS={
 };
 var gokuAnimator;
 function makeGokuAnimator(){
- const fighter=$('goku'),canvas=document.createElement('canvas');canvas.className='goku-frames';canvas.width=256;canvas.height=336;canvas.setAttribute('aria-hidden','true');fighter.append(canvas);
+ const fighter=$('goku'),canvas=document.createElement('canvas');canvas.className='goku-frames';canvas.width=384;canvas.height=336;canvas.setAttribute('aria-hidden','true');fighter.append(canvas);
  const ctx=canvas.getContext('2d'),sheet=new Image();sheet.src='/assets/goku-original.png';
  const cache=new Map();let active='',started=0,preview=null,ready=false;
  function frameTexture(f){const key=f.slice(0,4).join(',');if(cache.has(key))return cache.get(key);const scale=sheet.naturalWidth/731,[x,y,w,h]=f;const cut=document.createElement('canvas');cut.width=Math.ceil(w*scale);cut.height=Math.ceil(h*scale);const c=cut.getContext('2d',{willReadFrequently:true});c.drawImage(sheet,Math.round(x*scale),Math.round(y*scale),cut.width,cut.height,0,0,cut.width,cut.height);
@@ -157,8 +157,24 @@ function makeGokuAnimator(){
  const add=(n)=>{if(n<0||n>=W*H||seen[n])return;seen[n]=1;const i=n*4;if(px[i]>=244&&px[i+1]>=244&&px[i+2]>=244)queue.push(n);};
  for(let x=0;x<W;x++){add(x);add((H-1)*W+x);}for(let y=0;y<H;y++){add(y*W);add(y*W+W-1);}for(let q=0;q<queue.length;q++){const n=queue[q];px[n*4+3]=0;const x=n%W;if(x)add(n-1);if(x<W-1)add(n+1);add(n-W);add(n+W);}c.putImageData(data,0,0);cache.set(key,cut);return cut;}
  function paintCards(){if(!ready)return;const mapping={strike:'strike',beam:'ssjFire',superBeam:'ssjFire',charge:'charge',guard:'idle',evade:'evade',transform:'ssjIdle'};for(const [key,name]of Object.entries(mapping)){const el=document.querySelector('.art-'+key+' .card-sprite');if(el){el.style.backgroundImage='url("'+frameTexture(key==='superBeam'?[303,674,260,91,1]:GOKU_CLIPS[name][key==='beam'?0:key==='blast'?3:key==='strike'?6:0]).toDataURL()+'")';el.style.backgroundSize='contain';el.style.backgroundPosition='center';}}}
- function current(){if(preview)return preview;if(fighter.classList.contains('kame-preparing'))return 'kamePrepare';if(fighter.classList.contains('kame-firing'))return 'kameFire';if(fighter.classList.contains('kame-recovering'))return 'kameRecover';const ssj=fighter.classList.contains('transformed');if(fighter.classList.contains('four-blasts'))return ssj?'ssjFire':'burstFire';if(fighter.dataset.move==='blast'&&!ssj&&(fighter.classList.contains('charging')||fighter.classList.contains('firing')))return 'kiBurst';if(fighter.classList.contains('hit')||fighter.classList.contains('combo-receiving'))return ssj?'ssjIdle':'hurt';if(fighter.classList.contains('powering'))return 'transform';if(fighter.classList.contains('firing'))return ssj?'ssjFire':'fire';if(fighter.classList.contains('punching'))return ssj?'ssjStrike':'strike';if(fighter.classList.contains('charging'))return ssj?'ssjCharge':fighter.dataset.move==='beam'?'beamCharge':'charge';return ssj?'ssjIdle':'idle';}
- function tick(){const t=animationClock.time;if(ready&&fighter.classList.contains('atlas-fighter')){const name=current();if(name!==active){active=name;started=t;}const frames=GOKU_CLIPS[name],duration=frames.reduce((a,f)=>a+f[4],0);const loop=!!preview||['burstFire','idle','charge','beamCharge','ssjIdle','ssjCharge'].includes(name);let elapsed=loop?(t-started)%duration:Math.min(t-started,duration-1),frame=frames[0];for(const f of frames){frame=f;if(elapsed<f[4])break;elapsed-=f[4];}if(name==='burstFire'&&!preview)frame=frames[Number(fighter.dataset.burstPose||0)%frames.length];const tex=frameTexture(frame),s=sheet.naturalWidth/731,z=256/48/s;ctx.clearRect(0,0,canvas.width,canvas.height);ctx.imageSmoothingEnabled=false;const anchor=(frame[5]===undefined?frame[2]/2:frame[5]-frame[0])*s;ctx.drawImage(tex,128-anchor*z,canvas.height-18-tex.height*z,tex.width*z,tex.height*z);const muzzleVisible=name==='kiBurst'&&[3,5].includes(frames.indexOf(frame))&&burstArt.muzzle;if(muzzleVisible){const glow=burstArt.muzzle,h=80,w=h*glow.width/glow.height;ctx.drawImage(glow,128+18.5*256/48-w/2,canvas.height-18-21.5*256/48-h/2,w,h);}canvas.dataset.muzzle=muzzleVisible?'replacement':'none';canvas.dataset.clip=name;canvas.dataset.frame=String(frames.indexOf(frame));const pc=$('animationPreview');if(pc&&$('spriteDialog').open){const context=pc.getContext('2d');context.clearRect(0,0,pc.width,pc.height);context.imageSmoothingEnabled=false;context.drawImage(canvas,0,0,canvas.width,canvas.height);if(muzzleVisible&&burstArt.projectile){const shot=burstArt.projectile,h=42,w=h*shot.width/shot.height;context.drawImage(shot,264,canvas.height-18-21.5*256/48-h/2,w,h);}$('animationFrame').textContent=`Quadro ${frames.indexOf(frame)+1} / ${frames.length}`;}}requestAnimationFrame(tick);}
+ function current(){if(preview)return preview;if(fighter.classList.contains('kame-preparing'))return 'kamePrepare';if(fighter.classList.contains('kame-firing'))return 'kameFire';if(fighter.classList.contains('kame-recovering'))return 'kameRecover';const ssj=fighter.classList.contains('transformed');if(fighter.classList.contains('four-blasts'))return ssj?'ssjFire':'rajadaFire';if(fighter.dataset.move==='blast'&&!ssj&&(fighter.classList.contains('charging')||fighter.classList.contains('firing')))return 'rajadaPrepare';if(fighter.classList.contains('hit')||fighter.classList.contains('combo-receiving'))return ssj?'ssjIdle':'hurt';if(fighter.classList.contains('powering'))return 'transform';if(fighter.classList.contains('firing'))return ssj?'ssjFire':'fire';if(fighter.classList.contains('punching'))return ssj?'ssjStrike':'strike';if(fighter.classList.contains('charging'))return ssj?'ssjCharge':fighter.dataset.move==='beam'?'beamCharge':'charge';return ssj?'ssjIdle':'idle';}
+ function tick(){
+  const t=animationClock.time;
+  if(ready&&fighter.classList.contains('atlas-fighter')){
+   const name=current();if(name!==active){active=name;started=t;}
+   const native=rajadaSheet&&['kiBurst','rajadaPrepare','rajadaFire'].includes(name);
+   const frames=native?(name==='rajadaPrepare'?RAJADA_FRAMES.slice(0,2):name==='rajadaFire'?RAJADA_FRAMES.slice(2):RAJADA_FRAMES):GOKU_CLIPS[name]||GOKU_CLIPS.idle;
+   const duration=frames.reduce((a,f)=>a+f[4],0),loop=!!preview||['burstFire','idle','charge','beamCharge','ssjIdle','ssjCharge'].includes(name);let elapsed=loop?(t-started)%duration:Math.min(t-started,duration-1),frame=frames[0];
+   for(const f of frames){frame=f;if(elapsed<f[4])break;elapsed-=f[4];}
+   if(name==='rajadaFire'&&!preview)frame=frames[(Number(fighter.dataset.burstPose||0)%2)*2+(fighter.dataset.burstStage==='emit'?1:0)];
+   const frameIndex=frames.indexOf(frame);ctx.clearRect(0,0,canvas.width,canvas.height);ctx.imageSmoothingEnabled=false;
+   if(native){const [x,y,w,h,,anchor]=frame,z=256/180;ctx.drawImage(rajadaSheet,x,y,w,h,canvas.width/2-(anchor-x)*z,canvas.height-18-h*z,w*z,h*z);}
+   else{const tex=frameTexture(frame),scale=sheet.naturalWidth/731,z=256/48/scale,anchor=(frame[5]===undefined?frame[2]/2:frame[5]-frame[0])*scale;ctx.drawImage(tex,canvas.width/2-anchor*z,canvas.height-18-tex.height*z,tex.width*z,tex.height*z);}
+   const muzzleVisible=native&&(name==='rajadaFire'?frameIndex%2===1:name==='kiBurst'&&[3,5].includes(frameIndex));canvas.dataset.muzzle=muzzleVisible?'native-sheet':'none';canvas.dataset.clip=name;canvas.dataset.frame=String(frameIndex);canvas.dataset.source=native?'rajada-sheet':'goku-sheet';
+   const pc=$('animationPreview');if(pc&&$('spriteDialog').open){const context=pc.getContext('2d');context.clearRect(0,0,pc.width,pc.height);context.imageSmoothingEnabled=false;context.drawImage(canvas,0,0);if(muzzleVisible&&burstArt.projectile){const shot=burstArt.projectile,h=42,w=h*shot.width/shot.height;context.drawImage(shot,390,canvas.height-18-21.5*256/48-h/2,w,h);}$('animationFrame').textContent=`Quadro ${frameIndex+1} / ${frames.length}`;}
+  }requestAnimationFrame(tick);
+ }
+
  sheet.onload=()=>{ready=true;paintCards();fighter.classList.add('original-sprites');$('spriteStatus').textContent='Goku usa os quadros da folha original. Vegeta mantém o atlas anterior.';};sheet.onerror=()=>{$('spriteStatus').textContent='Falha ao carregar a folha de Goku. O visual anterior foi mantido.';};requestAnimationFrame(tick);return {preview(name){preview=name;active='';},clear(){preview=null;active='';},cards:paintCards,blast(){const texture=frameTexture([185,540,31,36,1]),copy=document.createElement('canvas');copy.width=texture.width;copy.height=texture.height;copy.getContext('2d').drawImage(texture,0,0);return copy;},beam(superPower=false){const texture=frameTexture([303,674,260,91,1]),copy=document.createElement('canvas');const arena=document.querySelector('.battle').getBoundingClientRect(),source=$('goku').getBoundingClientRect(),target=$('vegeta').getBoundingClientRect();const left=source.left-arena.left+source.width/2+32,width=Math.max(130,target.left-arena.left+target.width/2+22-left),height=superPower?BEAM_HEIGHT.super:BEAM_HEIGHT.normal;copy.width=Math.round(width*2);copy.height=height*2;copy.style.left=left+'px';copy.style.top=(source.top-arena.top+68-height/2)+'px';copy.style.width=width+'px';copy.style.height=height+'px';const c=copy.getContext('2d');c.imageSmoothingEnabled=false;const cap=texture.width*.28,outCap=Math.min(copy.width*.35,cap/texture.height*copy.height);c.drawImage(texture,0,0,cap,texture.height,0,0,outCap,copy.height);c.drawImage(texture,cap,0,texture.width-2*cap,texture.height,outCap,0,copy.width-2*outCap,copy.height);c.drawImage(texture,texture.width-cap,0,cap,texture.height,copy.width-outCap,0,outCap,copy.height);return copy;},ready:()=>ready};
 }
 gokuAnimator=makeGokuAnimator();
@@ -186,8 +202,8 @@ mountTemple();
 const burstArtReady=Promise.all(['projectile','impact','muzzle'].map(async kind=>{
  const image=new Image();image.src={projectile:'/assets/ki-projectile-original.png',impact:'/assets/ki-impact-original.png',muzzle:'/assets/ki-muzzle-original.png'}[kind];await image.decode();
  const canvas=document.createElement('canvas');canvas.width=image.naturalWidth;canvas.height=image.naturalHeight;const ctx=canvas.getContext('2d',{willReadFrequently:true});ctx.drawImage(image,0,0);
- const data=ctx.getImageData(0,0,canvas.width,canvas.height),p=data.data,matte=[p[0],p[1],p[2]];let left=canvas.width,top=canvas.height,right=-1,bottom=-1;
- for(let y=0;y<canvas.height;y++)for(let x=0;x<canvas.width;x++){const i=(y*canvas.width+x)*4;if(Math.max(Math.abs(p[i]-matte[0]),Math.abs(p[i+1]-matte[1]),Math.abs(p[i+2]-matte[2]))<40)p[i+3]=0;if(p[i+3]){left=Math.min(left,x);right=Math.max(right,x);top=Math.min(top,y);bottom=Math.max(bottom,y);}}
+ const data=ctx.getImageData(0,0,canvas.width,canvas.height),p=data.data,matte=[p[0],p[1],p[2]],keyBackground=p[3]>240;let left=canvas.width,top=canvas.height,right=-1,bottom=-1;
+ for(let y=0;y<canvas.height;y++)for(let x=0;x<canvas.width;x++){const i=(y*canvas.width+x)*4;if(keyBackground&&Math.max(Math.abs(p[i]-matte[0]),Math.abs(p[i+1]-matte[1]),Math.abs(p[i+2]-matte[2]))<40)p[i+3]=0;if(p[i+3]<=8)p[i+3]=0;if(p[i+3]){left=Math.min(left,x);right=Math.max(right,x);top=Math.min(top,y);bottom=Math.max(bottom,y);}}
  if(right<left)throw new Error('Arte vazia: '+kind);ctx.putImageData(data,0,0);const cut=document.createElement('canvas');cut.width=right-left+1;cut.height=bottom-top+1;cut.getContext('2d').drawImage(canvas,left,top,cut.width,cut.height,0,0,cut.width,cut.height);burstArt[kind]=cut;
 })).then(()=>paintBurstCard());
 function makeBurstArt(kind){const art=burstArt[kind],canvas=document.createElement('canvas');canvas.width=art.width;canvas.height=art.height;canvas.getContext('2d').drawImage(art,0,0);canvas.dataset.art=kind;return canvas;}
@@ -242,3 +258,19 @@ function spawnKiMuzzle(source,side){
  const stage=document.querySelector('.battle'),a=stage.getBoundingClientRect(),body=source.getBoundingClientRect(),direction=side==='player'?1:-1,flash=makeBurstArt('muzzle');
  flash.className='battle-fx ki-muzzle'+(side==='enemy'?' reverse':'');flash.style.left=(body.left-a.left+body.width/2+direction*64)+'px';flash.style.top=(body.top-a.top+68)+'px';stage.append(flash);return flash;
 }
+
+// Seis quadros fornecidos em Rajada.jpg; pivôs alinhados pela base dos pés.
+var rajadaSheet;
+const RAJADA_FRAMES=[
+ [30,0,110,151,120,80.5],[165,0,150,151,160,231.5],
+ [335,0,135,151,100,384.5],[470,0,165,151,220,512.5],
+ [640,0,125,151,100,683],[775,0,171,151,220,815]
+];
+const rajadaReady=(async()=>{
+ const image=new Image();image.src='/assets/rajada-action-original.jpg';await image.decode();const sheet=document.createElement('canvas');sheet.width=image.naturalWidth;sheet.height=image.naturalHeight;const c=sheet.getContext('2d',{willReadFrequently:true});c.drawImage(image,0,0);
+ const data=c.getImageData(0,0,sheet.width,sheet.height),p=data.data,W=sheet.width,H=sheet.height,seen=new Uint8Array(W*H),queue=[];
+ const add=n=>{if(n<0||n>=W*H||seen[n])return;seen[n]=1;const i=n*4;if(p[i]>=237&&p[i+1]>=237&&p[i+2]>=237)queue.push(n);};for(let x=0;x<W;x++){add(x);add((H-1)*W+x);}for(let y=0;y<H;y++){add(y*W);add(y*W+W-1);}for(let q=0;q<queue.length;q++){const n=queue[q],x=n%W;p[n*4+3]=0;if(x)add(n-1);if(x<W-1)add(n+1);add(n-W);add(n+W);}
+ // As duas emissões da montagem JPG ainda têm o antigo fundo vermelho ao redor.
+ for(const [left,right,top,bottom] of [[579,635,15,136],[873,946,12,137]])for(let y=top;y<bottom;y++)for(let x=left;x<right;x++){const i=(y*W+x)*4,r=p[i],g=p[i+1],b=p[i+2];if(r>60&&r<240&&g<135&&b<135&&r>g*1.5&&r>b*1.5)p[i+3]=0;}
+ c.putImageData(data,0,0);rajadaSheet=sheet;
+})();

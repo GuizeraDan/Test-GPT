@@ -80,10 +80,5 @@ Selecione habilidade, personagem, forma inicial e defesa do alvo. Clique em Repr
 
 “Testar sprites” abre a prévia das sequências individuais do Goku. Para interromper e recomeçar a habilidade inteira, use “Limpar teste”. O laboratório é para inspeção visual e não salva alterações nas cartas ou no código.
 
-A Rajada usa poses do Goku sem o clarão embutido da folha. O projétil é desenhado separadamente em 38 × 32 px, alinhado à palma, evitando a faixa vertical de energia junto à mão. Dano e custos permanecem os mesmos.
+Rajada refeita com os arquivos “Rajada.zip” e “Projétil de Fogo Pixelado Brilhante.zip”: Goku base usa os seis quadros da nova folha JPG, com o clarão nativo integrado às poses de emissão. A nova arte PNG transparente é usada exclusivamente no projétil em voo. Os pivôs dos quadros são alinhados aos pés; o Canvas foi ampliado horizontalmente para evitar cortes no clarão. O arquivo original de cada arte é preservado. O SSJ e Vegeta mantêm seus conjuntos de poses anteriores com emissão separada. Mantidos quatro impactos de 5, custo de 2 ki e 1 ação.
 
-A arte do projétil da Rajada foi substituída pelo PNG enviado em “Captura de tela 2026-11-05 095525.zip”. O fundo vermelho é removido ao carregar; a carta usa a mesma imagem. O impacto anterior e as regras de quatro acertos de 5 de dano permanecem.
-
-Emissão da Rajada: a arte substituta aparece na palma durante 100 ms antes de cada um dos quatro projéteis. As poses da prévia individual também removem o clarão antigo embutido e compõem a nova arte na emissão. O projétil sai da mesma região da mão; não há dano adicional na emissão.
-
-A emissão e o projétil são artes separadas: `ki-muzzle-original.png` é o clarão branco da palma (fundo vermelho removido em runtime), e `ki-projectile-original.png` é a rajada amarela que viaja. Há uma breve sobreposição dos dois no começo do voo; o clarão permanece na mão e não acompanha o projétil. A prévia individual mostra essa composição.
