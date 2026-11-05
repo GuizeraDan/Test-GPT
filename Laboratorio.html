@@ -59,6 +59,9 @@ canvas.burst-shot{width:64px;height:58px;object-fit:contain;filter:none}canvas.b
 .super-impact{translate:-50% -50%;z-index:12;pointer-events:none;image-rendering:pixelated;isolation:isolate}
 
 .lab-panel{padding:24px 4%;background:#182a35;border-bottom:1px solid #375361}.lab-panel[hidden]{display:none}.lab-heading{display:flex;justify-content:space-between;gap:20px;align-items:center}.lab-heading h1{margin:7px 0;font-size:30px}.lab-heading p,.lab-note{font-size:11px;color:#abc1ca;line-height:1.7;margin:5px 0}.lab-heading #labStatus{font-size:11px;color:#aee8cc;text-align:right}.lab-fields{display:grid;grid-template-columns:1.5fr 1.5fr 1fr 1fr 1fr;gap:12px;margin:17px 0}.lab-fields label{font-size:10px;color:#afc8d2}.lab-fields select{display:block;width:100%;margin-top:7px;background:#10212c;border:1px solid #3a5968;border-radius:5px;color:#ecf5ef;padding:10px;font:inherit;font-size:12px}.lab-buttons{display:flex;gap:9px;flex-wrap:wrap;align-items:center;margin-bottom:12px}.lab-buttons>button:not(.primary):not(.quiet){background:#253e4c;border:1px solid #456674;border-radius:5px;padding:11px 14px;color:#e7f1f0;font-size:11px}.lab-repeat{font-size:11px;color:#bad2db;display:flex;align-items:center;gap:6px}.lab-repeat input{accent-color:#ffad48}.lab-mode .controls .turn-actions{display:none}.lab-mode .hand{flex-wrap:wrap;justify-content:flex-start}.lab-mode .card{flex-basis:165px;min-height:245px}.lab-mode .battle{height:440px}.lab-mode #labToggle{color:#ffbd70}@media(max-width:750px){header{flex-wrap:wrap;height:auto;min-height:76px;padding-top:10px;padding-bottom:10px;gap:8px}#labToggle{padding:6px}.lab-heading{align-items:flex-start}.lab-heading h1{font-size:23px}.lab-fields{grid-template-columns:1fr 1fr}.lab-mode .battle{height:390px}.lab-mode .card{flex:1 0 145px;max-width:190px}.lab-buttons>button{flex:1}.lab-heading #labStatus{max-width:105px;font-size:10px}.lab-heading p{max-width:240px}.lab-note{font-size:10px}}
+
+/* Rajada compacta: o brilho da mão não integra o recorte do personagem. */
+canvas.burst-shot{width:38px;height:32px;object-fit:contain;filter:drop-shadow(0 0 2px #ffd84f80)}
 </style></head><body data-mode="lab"><main>
 <header><a class="brand" href="#">亀 <span>KAME<span class="brand-light"> DUEL</span><small>CARD BATTLE · PROTÓTIPO 01</small></span></a><div class="location"><span class="live"></span> TEMPLO CELESTIAL <small>ACIMA DAS NUVENS · CAMPO DE TREINO</small></div><button id="labToggle" class="quiet">Laboratório de animações</button><button id="help" class="quiet">Como jogar <span>?</span></button></header>
 <section id="labPanel" class="lab-panel" hidden aria-label="Controles do laboratório">
@@ -167,8 +170,8 @@ async function executeFourBlasts(side,index,token){
   const projectile=makeBurstArt('projectile');
   projectile.className='battle-fx burst-shot'+(side==='enemy'?' reverse':'');
   const stage=document.querySelector('.battle'),a=stage.getBoundingClientRect(),from=source.getBoundingClientRect(),to=dest.getBoundingClientRect(),direction=side==='player'?1:-1;
-  const start=from.left-a.left+from.width/2+direction*35-35,end=to.left-a.left+to.width/2-35;
-  projectile.style.top=(from.top-a.top+68-35)+'px';stage.append(projectile);
+  const shotWidth=38,shotHeight=32;const start=from.left-a.left+from.width/2+direction*44-shotWidth/2,end=to.left-a.left+to.width/2-shotWidth/2;
+  projectile.style.top=(from.top-a.top+68-shotHeight/2)+'px';stage.append(projectile);
   const flight=animateGame(projectile,[{left:start+'px'},{left:end+'px'}],{duration:220,easing:'linear',fill:'forwards'});comboMotions.add(flight);
   await delay(220);if(token!==generation)return;flight.cancel();comboMotions.delete(flight);projectile.remove();
   const result=resolveBurstHit(state);if(!result)return;render();
@@ -239,7 +242,7 @@ restoreAtlas();
 // Coordenadas na referência de 731 px; escaladas para o PNG original intacto.
 // [x, y, largura, altura, duração em ms, ponto de apoio horizontal opcional]
 const GOKU_CLIPS={
- burstFire:[[158,539,35,38,110,172],[257,539,35,38,110,272]],
+ burstFire:[[123,539,33,38,110,139],[222,539,31,38,110,238]],
  kamePrepare:[[87,627,24,37,140],[117,623,40,41,140],[159,608,48,56,180],[210,607,49,57,220],[266,621,40,43,140],[313,621,38,43,140],[357,618,35,45,140],[401,607,48,57,180],[457,623,23,41,160]],
  kameFire:[[45,702,29,39,100],[79,702,26,39,100],[115,702,25,39,100],[152,697,32,44,140],[197,702,26,39,100],[236,702,30,39,120],[276,703,27,38,200]],
  kameRecover:[[357,618,35,45,140],[313,621,38,43,140],[266,621,40,43,140],[87,627,24,37,140]],

@@ -79,3 +79,5 @@ Abra `Laboratorio.html` para testar todas as oito cartas sem esperar turnos nem 
 Selecione habilidade, personagem, forma inicial e defesa do alvo. Clique em Reproduzir ou em uma carta. O alvo e os recursos são restaurados antes de cada teste. Há velocidades de 0,25× a 2×, pausa/continuação, avanço de 1/60 de segundo da simulação, repetição automática e limpeza do teste. Os controles sincronizam temporizadores, sprites, explosões e animações do navegador. A partida normal conserva suas regras. Vegeta ainda usa o atlas provisório.
 
 “Testar sprites” abre a prévia das sequências individuais do Goku. Para interromper e recomeçar a habilidade inteira, use “Limpar teste”. O laboratório é para inspeção visual e não salva alterações nas cartas ou no código.
+
+A Rajada usa poses do Goku sem o clarão embutido da folha. O projétil é desenhado separadamente em 38 × 32 px, alinhado à palma, evitando a faixa vertical de energia junto à mão. Dano e custos permanecem os mesmos.

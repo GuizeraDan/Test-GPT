@@ -55,8 +55,8 @@ async function executeFourBlasts(side,index,token){
   const projectile=makeBurstArt('projectile');
   projectile.className='battle-fx burst-shot'+(side==='enemy'?' reverse':'');
   const stage=document.querySelector('.battle'),a=stage.getBoundingClientRect(),from=source.getBoundingClientRect(),to=dest.getBoundingClientRect(),direction=side==='player'?1:-1;
-  const start=from.left-a.left+from.width/2+direction*35-35,end=to.left-a.left+to.width/2-35;
-  projectile.style.top=(from.top-a.top+68-35)+'px';stage.append(projectile);
+  const shotWidth=38,shotHeight=32;const start=from.left-a.left+from.width/2+direction*44-shotWidth/2,end=to.left-a.left+to.width/2-shotWidth/2;
+  projectile.style.top=(from.top-a.top+68-shotHeight/2)+'px';stage.append(projectile);
   const flight=animateGame(projectile,[{left:start+'px'},{left:end+'px'}],{duration:220,easing:'linear',fill:'forwards'});comboMotions.add(flight);
   await delay(220);if(token!==generation)return;flight.cancel();comboMotions.delete(flight);projectile.remove();
   const result=resolveBurstHit(state);if(!result)return;render();
@@ -127,7 +127,7 @@ restoreAtlas();
 // Coordenadas na referência de 731 px; escaladas para o PNG original intacto.
 // [x, y, largura, altura, duração em ms, ponto de apoio horizontal opcional]
 const GOKU_CLIPS={
- burstFire:[[158,539,35,38,110,172],[257,539,35,38,110,272]],
+ burstFire:[[123,539,33,38,110,139],[222,539,31,38,110,238]],
  kamePrepare:[[87,627,24,37,140],[117,623,40,41,140],[159,608,48,56,180],[210,607,49,57,220],[266,621,40,43,140],[313,621,38,43,140],[357,618,35,45,140],[401,607,48,57,180],[457,623,23,41,160]],
  kameFire:[[45,702,29,39,100],[79,702,26,39,100],[115,702,25,39,100],[152,697,32,44,140],[197,702,26,39,100],[236,702,30,39,120],[276,703,27,38,200]],
  kameRecover:[[357,618,35,45,140],[313,621,38,43,140],[266,621,40,43,140],[87,627,24,37,140]],
