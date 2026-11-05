@@ -1,0 +1,81 @@
+{
+  "source": "gogeta-original.png",
+  "width": 360,
+  "height": 360,
+  "columns": 9,
+  "rows": 1,
+  "frames": [
+    {
+      "index": 0,
+      "x": 0,
+      "y": 0,
+      "width": 360,
+      "height": 360,
+      "duration": 140
+    },
+    {
+      "index": 1,
+      "x": 360,
+      "y": 0,
+      "width": 360,
+      "height": 360,
+      "duration": 160
+    },
+    {
+      "index": 2,
+      "x": 720,
+      "y": 0,
+      "width": 360,
+      "height": 360,
+      "duration": 200
+    },
+    {
+      "index": 3,
+      "x": 1080,
+      "y": 0,
+      "width": 360,
+      "height": 360,
+      "duration": 200
+    },
+    {
+      "index": 4,
+      "x": 1440,
+      "y": 0,
+      "width": 360,
+      "height": 360,
+      "duration": 180
+    },
+    {
+      "index": 5,
+      "x": 1800,
+      "y": 0,
+      "width": 360,
+      "height": 360,
+      "duration": 180
+    },
+    {
+      "index": 6,
+      "x": 2160,
+      "y": 0,
+      "width": 360,
+      "height": 360,
+      "duration": 160
+    },
+    {
+      "index": 7,
+      "x": 2520,
+      "y": 0,
+      "width": 360,
+      "height": 360,
+      "duration": 240
+    },
+    {
+      "index": 8,
+      "x": 2880,
+      "y": 0,
+      "width": 360,
+      "height": 360,
+      "duration": 280
+    }
+  ]
+}

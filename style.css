@@ -69,3 +69,9 @@ canvas.burst-shot{width:38px;height:32px;object-fit:contain;filter:drop-shadow(0
 
 /* Canvas mais largo preserva a escala e comporta o clarão nativo da nova folha. */
 .goku-frames{width:calc(var(--sprite-width,185px) * 1.5)}#animationPreview{width:min(100%,340px);aspect-ratio:448 / 336}canvas.burst-shot{width:44px;height:34px}@media(max-width:750px){.goku-frames{width:calc(var(--sprite-width,155px) * 1.5)}}
+
+/* Gogeta usa exclusivamente a folha fornecida, inclusive a aura da transformação. */
+.gogeta-frames{display:none;position:absolute;width:calc(var(--sprite-width,185px) * 1.5);height:calc(var(--sprite-height,185px) * 1.3125);left:50%;bottom:-6px;translate:-50% 0;image-rendering:pixelated;z-index:4;pointer-events:none}
+.gogeta-visible .gogeta-frames{display:block}.gogeta-visible .goku-frames,.gogeta-visible .atlas-sprite,.gogeta-visible .aura,.gogeta-visible:after{display:none!important}
+@media(max-width:750px){.gogeta-frames{width:calc(var(--sprite-width,155px) * 1.5);height:calc(var(--sprite-height,155px) * 1.3125)}}
+.vegeta .gogeta-frames{transform:scaleX(-1)}

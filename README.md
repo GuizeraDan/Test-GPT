@@ -95,3 +95,11 @@ Goku base usa `assets/Idle.ase`: 20 quadros RGBA de 64 × 64, com 100 ms cada, r
 
 ## Postura Super Saiyajin
 Enquanto está transformado, Goku usa `assets/Idle SSJ.ase`: 12 quadros RGBA de 64 × 64 com 100 ms cada, em um ciclo de 1,2 segundo. Os efeitos de aura vêm do arquivo; não há uma aura CSS adicional. A sequência é retomada após as habilidades na forma SSJ e aparece em “Testar sprites → Postura SSJ”. A postura base e a animação de entrada na transformação permanecem as anteriores. Para reexportar após editar: `python tools/export_aseprite.py "assets/Idle SSJ.ase" assets/goku-ssj-idle-ase`, depois `python build-standalone.py`.
+
+### Gogeta Super Sayajin (teste)
+
+A carta custa 4 ki e 1 ação, concede +8 de dano e mantém o custo de 1 ki por turno. Está no baralho e no laboratório, que agora contém 9 cartas. Pode substituir a forma SSJ sem acumular bônus.
+
+A transformação reproduz as 9 poses da folha enviada; a última vira a postura final. A folha não inclui ataques próprios: Gogeta mantém essa postura durante os efeitos das técnicas. Use “Forma inicial → Gogeta Super Sayajin” para testar as demais cartas nessa forma, ou “Testar sprites → Gogeta Super Sayajin” para inspecionar os quadros. Pausa, avanço e velocidade também funcionam na transformação.
+
+O original está em `assets/gogeta-original.png`. `python tools/export_gogeta.py` reproduz os recortes, remove o branco conectado às bordas e alinha os pés sem redesenhar a arte.

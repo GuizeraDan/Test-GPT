@@ -15,9 +15,9 @@ function animateGame(element,frames,options){const animation=element.animate(fra
 
 var burstArt={};
 let state=createGame(),generation=0,busy=false;const $=id=>document.getElementById(id);const types={'TÉCNICA':'technique','HABILIDADE':'ability','REAÇÃO':'reaction','TRANSFORMAÇÃO':'transformation'};
-function hud(f,enemy){return `<div class="fighter-hud ${enemy?'enemy':''}"><div class="hud-name">${f.name.toUpperCase()}<small>${enemy?'OPONENTE · CPU':'VOCÊ · JOGADOR 01'}</small></div><div class="hp-label"><span>VIDA</span><b>${f.hp} <span>/ 100</span></b></div><div class="hp-track" role="progressbar" aria-label="Vida de ${f.name}" aria-valuenow="${f.hp}" aria-valuemin="0" aria-valuemax="100"><div class="hp-fill" style="width:${f.hp}%"></div></div><div class="ki-row"><span>KI</span>${Array.from({length:8},(_,i)=>`<i class="ki-cell ${i<f.ki?'filled':''}"></i>`).join('')}<b>${f.ki}/8</b></div><div class="status">${[f.shield?`◈ Escudo ${f.shield}`:'',f.reaction?'↯ Reação preparada':'',f.transformed?'✦ Super Saiyajin':''].filter(Boolean).join(' · ')||'Forma base · Pronto para o combate'}</div></div>`;}
+function hud(f,enemy){return `<div class="fighter-hud ${enemy?'enemy':''}"><div class="hud-name">${f.form==='gogetaSSJ'?'GOGETA':f.name.toUpperCase()}<small>${enemy?'OPONENTE · CPU':'VOCÊ · JOGADOR 01'}</small></div><div class="hp-label"><span>VIDA</span><b>${f.hp} <span>/ 100</span></b></div><div class="hp-track" role="progressbar" aria-label="Vida de ${f.name}" aria-valuenow="${f.hp}" aria-valuemin="0" aria-valuemax="100"><div class="hp-fill" style="width:${f.hp}%"></div></div><div class="ki-row"><span>KI</span>${Array.from({length:8},(_,i)=>`<i class="ki-cell ${i<f.ki?'filled':''}"></i>`).join('')}<b>${f.ki}/8</b></div><div class="status">${[f.shield?`◈ Escudo ${f.shield}`:'',f.reaction?'↯ Reação preparada':'',f.form==='gogetaSSJ'?'✦ Gogeta Super Sayajin':f.transformed?'✦ Super Saiyajin':''].filter(Boolean).join(' · ')||'Forma base · Pronto para o combate'}</div></div>`;}
 function render(){ $('playerHud').innerHTML=hud(state.player,false);$('enemyHud').innerHTML=hud(state.enemy,true);$('round').textContent=`ROUND ${String(state.round).padStart(2,'0')}`;$('phase').textContent=state.winner?'FIM DO TREINO':state.turn==='player'?'SEU TURNO':'TURNO DA CPU';$('turnTitle').textContent=state.winner?'Treino concluído.':state.turn==='player'?'Sua vez de brilhar.':'Vegeta está planejando…';$('turnHint').textContent=state.turn==='player'?(state.actions?'Combine suas cartas. Encontre uma abertura.':'Suas ações acabaram. Encerre o turno para continuar.'):'Observe as técnicas do adversário e prepare sua resposta.';$('actions').innerHTML=`<b>${state.actions} / 2</b> AÇÕES`;$('endTurn').disabled=busy||state.turn!=='player'||!!state.winner;$('handCount').textContent=state.player.hand.length;$('deckCount').textContent=`▱ ${state.player.deck.length} NO BARALHO · ${state.player.discard.length} DESCARTE`;$('lastAction').textContent=state.log.at(-1);
-$('hand').replaceChildren();(labMode?Object.keys(CARDS):state.player.hand).forEach((key,i)=>{const c=CARDS[key],button=document.createElement('button');button.className=`card ${types[c.type]}`;button.disabled=busy||(!labMode&&!canPlay(state,'player',i));button.setAttribute('aria-label',`${c.name}, ${c.cost} ki, ${c.actions||1} ações. ${c.description}`);button.innerHTML=`<div class="card-top"><span>${c.type}</span><b class="cost">${c.cost}</b></div><div class="card-art art-${key}"><span class="card-sprite"></span><span>${c.icon}</span></div><h3>${c.name}</h3><p>${c.description}</p><div class="card-stats"><span>${c.cost} KI</span><span>${c.actions||1} ${(c.actions||1)===1?'AÇÃO':'AÇÕES'}</span>${c.damage?`<span>${c.damage} DANO</span>`:''}</div><span class="card-foot">${labMode?(busy?'REPRODUZINDO':'TESTAR ANIMAÇÃO'):c.transform&&state.player.transformed?'JÁ TRANSFORMADO':c.reaction&&state.player.reaction?'REAÇÃO JÁ PREPARADA':state.player.ki<c.cost?'KI INSUFICIENTE':state.actions<(c.actions||1)?'AÇÕES INSUFICIENTES':(c.actions===2?'02 AÇÕES · ':'01 AÇÃO · ')+(c.damage?'OFENSIVA':c.reaction?'PREPARAR':'SUPORTE')}</span>`;button.onclick=()=>labMode?runLab(key):execute('player',i);$('hand').append(button);});if(!state.player.hand.length)$('hand').innerHTML='<p class="empty">Sem cartas na mão. Encerre o turno para comprar mais.</p>';for(const [side,id]of [['player','goku'],['enemy','vegeta']]){ $(id).classList.toggle('transformed',state[side].transformed);$(id).classList.toggle('shielded',state[side].shield>0);$(id).classList.toggle('reaction-ready',state[side].reaction>0); };$('logList').replaceChildren(...state.log.map(t=>{const li=document.createElement('li');li.textContent=t;return li;}));if(gokuAnimator)gokuAnimator.cards();if(burstArt.projectile)paintBurstCard();if(baseKameCardData)paintBaseKameCard();if(labMode)renderLab();}
+$('hand').replaceChildren();(labMode?Object.keys(CARDS):state.player.hand).forEach((key,i)=>{const c=CARDS[key],button=document.createElement('button');button.className=`card ${types[c.type]}`;button.disabled=busy||(!labMode&&!canPlay(state,'player',i));button.setAttribute('aria-label',`${c.name}, ${c.cost} ki, ${c.actions||1} ações. ${c.description}`);button.innerHTML=`<div class="card-top"><span>${c.type}</span><b class="cost">${c.cost}</b></div><div class="card-art art-${key}"><span class="card-sprite"></span><span>${c.icon}</span></div><h3>${c.name}</h3><p>${c.description}</p><div class="card-stats"><span>${c.cost} KI</span><span>${c.actions||1} ${(c.actions||1)===1?'AÇÃO':'AÇÕES'}</span>${c.damage?`<span>${c.damage} DANO</span>`:''}</div><span class="card-foot">${labMode?(busy?'REPRODUZINDO':'TESTAR ANIMAÇÃO'):c.transform&&(c.form==='gogetaSSJ'?state.player.form==='gogetaSSJ':state.player.transformed)?'JÁ TRANSFORMADO':c.reaction&&state.player.reaction?'REAÇÃO JÁ PREPARADA':state.player.ki<c.cost?'KI INSUFICIENTE':state.actions<(c.actions||1)?'AÇÕES INSUFICIENTES':(c.actions===2?'02 AÇÕES · ':'01 AÇÃO · ')+(c.damage?'OFENSIVA':c.reaction?'PREPARAR':'SUPORTE')}</span>`;button.onclick=()=>labMode?runLab(key):execute('player',i);$('hand').append(button);});if(!state.player.hand.length)$('hand').innerHTML='<p class="empty">Sem cartas na mão. Encerre o turno para comprar mais.</p>';for(const [side,id]of [['player','goku'],['enemy','vegeta']]){ $(id).classList.toggle('transformed',state[side].transformed);$(id).querySelector('.fighter-name').innerHTML=`${state[side].form==='gogetaSSJ'?'GOGETA':state[side].name.toUpperCase()} <span>${side==='player'?'VOCÊ':'CPU'}</span>`;$(id).classList.toggle('shielded',state[side].shield>0);$(id).classList.toggle('reaction-ready',state[side].reaction>0); };$('logList').replaceChildren(...state.log.map(t=>{const li=document.createElement('li');li.textContent=t;return li;}));if(gokuAnimator)gokuAnimator.cards();paintGogetaCard();if(burstArt.projectile)paintBurstCard();if(baseKameCardData)paintBaseKameCard();if(labMode)renderLab();}
 async function execute(side,i){
  if(busy||!canPlay(state,side,i))return;
  const token=generation,key=state[side].hand[i],c=CARDS[key],target=side==='player'?'enemy':'player';
@@ -25,6 +25,7 @@ async function execute(side,i){
  busy=true;source.dataset.move=key;render();
  if(side==='player'&&key==='beam'&&!state.player.transformed){try{await baseKameReady;}catch{busy=false;clearBattleFx();render();$('lastAction').textContent='Não foi possível carregar a animação base.';return;}if(token!==generation)return;}
  if(key==='superBeam'){try{await superImpactReady;}catch{busy=false;clearBattleFx();render();$('lastAction').textContent='Não foi possível carregar a explosão do Super Kamehameha.';return;}if(token!==generation)return;}
+ if(key==='gogeta'){await executeGogeta(side,i,token);return;}
  const beam=key==='beam'||key==='superBeam',ranged=beam||key==='blast',originalCombo=side==='player'&&key==='strike'&&!state.player.transformed&&gokuAnimator?.ready(),originalBurst=side==='player'&&key==='blast'&&!state.player.transformed&&gokuAnimator?.ready();
  if(side==='player'&&(key==='beam'||key==='superBeam')&&gokuAnimator?.ready()){await executeKamehameha(i,token,key==='superBeam');return;}
  if(key==='blast'){await executeFourBlasts(side,i,token);return;}
@@ -73,7 +74,7 @@ async function executeFourBlasts(side,index,token){
 async function executeKamehameha(index,token,superPower=false){
  const source=$('goku'),dest=$('vegeta'),baseForm=!superPower&&!state.player.transformed;source.classList.toggle('base-kame',baseForm);source.classList.add('kame-preparing');source.classList.toggle('super-kame',superPower);$('lastAction').textContent=superPower?'Goku concentra todo seu ki… Super Kamehameha!':'Goku concentra o ki e libera seu poder…';
  await delay(baseForm?BASE_KAME_FRAMES.slice(0,BASE_KAME_CHARGE_FRAMES).reduce((sum,f)=>sum+f[4],0):1440);if(token!==generation)return;
- source.classList.remove('four-blasts','super-kame','kame-preparing');source.classList.add('kame-firing');$('lastAction').textContent='Kame… hame… HA!';
+ source.classList.remove('gogeta-transform','four-blasts','super-kame','kame-preparing');source.classList.add('kame-firing');$('lastAction').textContent='Kame… hame… HA!';
  await delay(baseForm?BASE_KAME_FRAMES[BASE_KAME_CHARGE_FRAMES][4]:540);if(token!==generation)return;
  const beam=gokuAnimator.beam(superPower,baseForm);beam.className='battle-fx energy-beam original-beam'+(superPower?' super-kame-beam':'');document.querySelector('.battle').append(beam);
  await delay(220);if(token!==generation)return;
@@ -106,14 +107,14 @@ async function executeContactCombo(side,index,token){
  const hp=state[target].hp;play(state,side,index);render();
  counter.textContent=`${hits} HITS · ${hp-state[target].hp?'-'+(hp-state[target].hp)+' HP':'BLOQUEADO'}`;
  $('effect').textContent=hp>state[target].hp?`−${hp-state[target].hp}`:'BLOQUEADO';$('effect').classList.remove('show');void $('effect').offsetWidth;$('effect').classList.add('show');
- source.classList.remove('punching');dest.classList.remove('four-blasts','super-kame','kame-preparing','kame-firing','kame-recovering','combo-receiving');await delay(140);if(token!==generation)return;
+ source.classList.remove('punching');dest.classList.remove('gogeta-transform','four-blasts','super-kame','kame-preparing','kame-firing','kame-recovering','combo-receiving');await delay(140);if(token!==generation)return;
  motion.cancel();comboMotions.delete(motion);
  const back=animateGame(source,[{translate:`${travel}px 0px`},{translate:'0px 0px'}],{duration:260,easing:'ease-out',fill:'forwards'});comboMotions.add(back);
  await delay(260);if(token!==generation)return;back.cancel();comboMotions.delete(back);clearBattleFx();busy=false;render();
  if(state.winner&&!labMode){$('resultTitle').textContent=state.winner==='player'?'Você superou seus limites!':'Vegeta levou este round.';$('resultText').textContent=`Treino encerrado em ${state.round} rounds.`;$('resultDialog').showModal();}
 }
 function spawnKiBurst(){const projectile=gokuAnimator.blast();projectile.className='battle-fx energy-blast original-ki';document.querySelector('.battle').append(projectile);}
-function clearBattleFx(){document.querySelectorAll('.base-kame').forEach(e=>e.classList.remove('base-kame'));for(const animation of comboMotions)animation.cancel();comboMotions.clear();document.querySelectorAll('.battle-fx').forEach(e=>e.remove());for(const id of ['goku','vegeta'])$(id).classList.remove('four-blasts','super-kame','kame-preparing','kame-firing','kame-recovering','combo-receiving','combining','charging','firing','powering','punching','supporting','attacking','hit','impact','blocked');}
+function clearBattleFx(){document.querySelectorAll('.base-kame').forEach(e=>e.classList.remove('base-kame'));for(const animation of comboMotions)animation.cancel();comboMotions.clear();document.querySelectorAll('.battle-fx').forEach(e=>e.remove());for(const id of ['goku','vegeta'])$(id).classList.remove('gogeta-transform','four-blasts','super-kame','kame-preparing','kame-firing','kame-recovering','combo-receiving','combining','charging','firing','powering','punching','supporting','attacking','hit','impact','blocked');}
 const delay=ms=>animationClock.wait(ms);$('endTurn').onclick=async()=>{if(busy||state.turn!=='player'||state.winner)return;const token=generation;endTurn(state);render();await delay(900);for(let n=0;n<2;n++){if(token!==generation||state.winner)return;const i=chooseEnemy(state);if(i<0)break;await execute('enemy',i);await delay(400);}if(token!==generation||state.winner)return;endTurn(state);render();};
 function reset(){generation++;animationClock.cancelWaits();busy=false;clearBattleFx();state=createGame();if(labMode)prepareLabState();document.querySelectorAll('dialog[open]').forEach(d=>d.close());render();} $('restart').onclick=reset;$('playAgain').onclick=reset;$('help').onclick=()=>$('helpDialog').showModal();$('logButton').onclick=()=>$('logDialog').showModal();document.querySelectorAll('.close,.close-help').forEach(b=>b.onclick=()=>b.closest('dialog').close());render();
 
@@ -234,11 +235,11 @@ function startSuperImpact(target,token){
 }
 
 function prepareLabState(){
- const side=$('labActor').value,target=side==='player'?'enemy':'player';state.turn=side;state.actions=2;state.winner=null;state.player.hand=Object.keys(CARDS);state.enemy.hand=Object.keys(CARDS);state.player.ki=8;state.enemy.ki=8;state[side].transformed=$('labForm').value==='ssj';
+ const side=$('labActor').value,target=side==='player'?'enemy':'player';state.turn=side;state.actions=2;state.winner=null;state.player.hand=Object.keys(CARDS);state.enemy.hand=Object.keys(CARDS);state.player.ki=8;state.enemy.ki=8;state[side].form=$('labForm').value==='gogetaSSJ'?'gogetaSSJ':$('labForm').value==='ssj'?'ssj':null;state[side].transformed=!!state[side].form;
  const defense=$('labDefense').value;state[target].shield=defense==='shield'?18:0;state[target].reaction=defense==='reaction'?15:0;
 }
 function renderLab(){
- $('round').textContent='LAB';$('handCount').textContent=Object.keys(CARDS).length;$('phase').textContent=busy?'ANIMAÇÃO EM CURSO':'TESTE LIVRE';$('turnTitle').textContent='Todas as cartas. Sem esperar turnos.';$('turnHint').textContent='Clique em uma carta ou use Reproduzir. O alvo é restaurado a cada teste.';$('actions').textContent='TESTE LIVRE';$('deckCount').textContent='8 CARTAS DISPONÍVEIS';$('labPlay').disabled=busy;$('labSkill').disabled=busy;$('labActor').disabled=busy;$('labForm').disabled=busy;$('labDefense').disabled=busy;
+ $('round').textContent='LAB';$('handCount').textContent=Object.keys(CARDS).length;$('phase').textContent=busy?'ANIMAÇÃO EM CURSO':'TESTE LIVRE';$('turnTitle').textContent='Todas as cartas. Sem esperar turnos.';$('turnHint').textContent='Clique em uma carta ou use Reproduzir. O alvo é restaurado a cada teste.';$('actions').textContent='TESTE LIVRE';$('deckCount').textContent=`${Object.keys(CARDS).length} CARTAS DISPONÍVEIS`;$('labPlay').disabled=busy;$('labSkill').disabled=busy;$('labActor').disabled=busy;$('labForm').disabled=busy;$('labDefense').disabled=busy;
  $('labPause').textContent=animationClock.paused?'▶ Continuar':'Ⅱ Pausar';$('labStatus').textContent=animationClock.paused?'Pausado · use avanço para inspecionar':busy?'Reproduzindo…':'Pronto para testar';
 }
 function toggleLab(enabled){
@@ -248,7 +249,7 @@ function toggleLab(enabled){
 }
 async function runLab(key=$('labSkill').value){
  if(!labMode||busy)return;animationClock.paused=false;$('labSkill').value=key;generation++;animationClock.cancelWaits();clearBattleFx();state=createGame();prepareLabState();const side=$('labActor').value;
- if(key==='transform')state[side].transformed=false;const token=generation;const index=state[side].hand.indexOf(key);gokuAnimator?.clear();render();
+ if(CARDS[key].transform){state[side].transformed=false;state[side].form=null;}const token=generation;const index=state[side].hand.indexOf(key);gokuAnimator?.clear();render();
  try{await execute(side,index);}catch(error){if(token!==generation)return;clearBattleFx();busy=false;render();$('labStatus').textContent='Erro ao reproduzir. Confira o histórico.';console.error(error);return;}
  if(token!==generation||!labMode)return;state.player.hand=Object.keys(CARDS);state.enemy.hand=Object.keys(CARDS);state.player.ki=8;state.enemy.ki=8;state.actions=2;render();
  if($('labRepeat').checked){await delay(600);if(token===generation&&labMode&&$('labRepeat').checked)runLab(key);}
@@ -311,3 +312,43 @@ const ssjIdleReady=(async()=>{
  if(!metadata.frames.length)throw new Error('A postura SSJ está vazia');ssjIdleMetadata=metadata;SSJ_IDLE_FRAMES=metadata.frames.map((frame,index)=>[index,0,0,0,frame.duration]);ssjIdleSheet=image;
  const option=document.querySelector('#animationSelect option[value=ssjIdle]');if(option)option.textContent=`Postura SSJ · Idle SSJ.ase (${metadata.frames.length} quadros)`;
 })();
+
+
+// Folha original de Gogeta: nove poses, com pivôs e pés alinhados na exportação.
+var gogetaSheet,gogetaMetadata,gogetaCardData;
+const gogetaReady=(async()=>{
+ const image=new Image();image.src='/assets/gogeta-transform.png';
+ const [,metadata]=await Promise.all([image.decode(),fetch('/assets/gogeta-transform.json').then(r=>{if(!r.ok)throw new Error('Falha ao carregar Gogeta');return r.json();})]);
+ gogetaMetadata=metadata;gogetaSheet=image;
+ const f=metadata.frames.at(-1),card=document.createElement('canvas');card.width=180;card.height=240;
+ card.getContext('2d').drawImage(image,f.x+100,120,180,240,0,0,180,240);gogetaCardData=card.toDataURL();paintGogetaCard();
+})();
+function paintGogetaCard(){const art=document.querySelector('.art-gogeta .card-sprite');if(art&&gogetaCardData){art.style.backgroundImage='url("'+gogetaCardData+'")';art.style.backgroundSize='contain';art.style.backgroundPosition='center';}}
+async function executeGogeta(side,index,token){
+ const source=$(side==='player'?'goku':'vegeta');
+ try{await gogetaReady;}catch{if(token!==generation)return;busy=false;render();$('lastAction').textContent='Não foi possível carregar a transformação de Gogeta.';return;}
+ if(token!==generation)return;source.dataset.gogetaStart=String(animationClock.time);source.classList.add('gogeta-transform');
+ $('lastAction').textContent='Gogeta concentra energia… Super Sayajin!';
+ await delay(gogetaMetadata.frames.reduce((sum,f)=>sum+f.duration,0));if(token!==generation)return;
+ play(state,side,index);source.classList.remove('gogeta-transform');render();
+ $('effect').textContent='GOGETA SUPER SAYAJIN';$('effect').classList.remove('show');void $('effect').offsetWidth;$('effect').classList.add('show');
+ await delay(350);if(token!==generation)return;clearBattleFx();busy=false;render();
+}
+function makeGogetaAnimator(side){
+ const fighter=$(side==='player'?'goku':'vegeta'),canvas=document.createElement('canvas');canvas.className='gogeta-frames';canvas.width=384;canvas.height=336;canvas.setAttribute('aria-hidden','true');fighter.append(canvas);
+ const ctx=canvas.getContext('2d');let previewStart=0,wasPreview=false;
+ function tick(){
+  const preview=side==='player'&&$('spriteDialog').open&&$('animationSelect').value==='gogetaTransform';
+  if(preview&&!wasPreview)previewStart=animationClock.time;wasPreview=preview;
+  const transforming=fighter.classList.contains('gogeta-transform'),visible=!!gogetaSheet&&(preview||transforming||state[side].form==='gogetaSSJ');fighter.classList.toggle('gogeta-visible',visible);
+  if(visible){
+   const frames=gogetaMetadata.frames,duration=frames.reduce((n,f)=>n+f.duration,0);let elapsed=preview?(animationClock.time-previewStart)%duration:animationClock.time-Number(fighter.dataset.gogetaStart||0),index=frames.length-1;
+   if(preview||transforming){for(let i=0;i<frames.length;i++){if(elapsed<frames[i].duration){index=i;break;}elapsed-=frames[i].duration;}}
+   const f=frames[index],z=.85,w=f.width*z,h=f.height*z;ctx.clearRect(0,0,384,336);ctx.imageSmoothingEnabled=false;
+   ctx.drawImage(gogetaSheet,f.x,f.y,f.width,f.height,192-w/2,318-350*z,w,h);
+   canvas.dataset.source='gogeta-sheet';canvas.dataset.clip=preview||transforming?'gogetaTransform':'gogetaIdle';canvas.dataset.frame=String(index);
+   if(preview){const c=$('animationPreview').getContext('2d');c.clearRect(0,0,448,336);c.drawImage(canvas,0,0);$('animationFrame').textContent=`Quadro ${index+1} / ${frames.length}`;}
+  }requestAnimationFrame(tick);
+ }requestAnimationFrame(tick);
+}
+makeGogetaAnimator('player');makeGogetaAnimator('enemy');
