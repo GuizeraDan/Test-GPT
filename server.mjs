@@ -1,0 +1,4 @@
+import http from 'node:http';
+import {readFile} from 'node:fs/promises';
+const files={'/':'index.html','/index.html':'index.html','/style.css':'style.css','/app.js':'app.js','/game.js':'game.js','/assets/goku-base.png':'assets/goku-base.png','/assets/battle-atlas.png':'assets/battle-atlas.png','/assets/goku-original.png':'assets/goku-original.png','/assets/temple-original.png':'assets/temple-original.png'};
+http.createServer(async(req,res)=>{const path=files[new URL(req.url,'http://localhost').pathname];if(!path){res.writeHead(404);return res.end('Not found');}try{const data=await readFile(new URL(path,import.meta.url));res.setHeader('Content-Type',path.endsWith('.png')?'image/png':path.endsWith('.css')?'text/css':path.endsWith('.js')?'text/javascript':'text/html; charset=utf-8');res.end(data);}catch{res.writeHead(500);res.end('Server error');}}).listen(Number(process.env.PORT||3000),'0.0.0.0',()=>console.log('Kame Duel ready on port '+(process.env.PORT||3000)));

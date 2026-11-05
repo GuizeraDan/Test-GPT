@@ -1,0 +1,145 @@
+import {CARDS,createGame,canPlay,play,endTurn,chooseEnemy} from './game.js';
+// Altura dos feixes em pixels. Ajuste aqui para mudar o tamanho visual.
+const BEAM_HEIGHT={normal:105,super:195};
+const comboMotions=new Set();
+let state=createGame(),generation=0,busy=false;const $=id=>document.getElementById(id);const types={'TÉCNICA':'technique','HABILIDADE':'ability','REAÇÃO':'reaction','TRANSFORMAÇÃO':'transformation'};
+function hud(f,enemy){return `<div class="fighter-hud ${enemy?'enemy':''}"><div class="hud-name">${f.name.toUpperCase()}<small>${enemy?'OPONENTE · CPU':'VOCÊ · JOGADOR 01'}</small></div><div class="hp-label"><span>VIDA</span><b>${f.hp} <span>/ 100</span></b></div><div class="hp-track" role="progressbar" aria-label="Vida de ${f.name}" aria-valuenow="${f.hp}" aria-valuemin="0" aria-valuemax="100"><div class="hp-fill" style="width:${f.hp}%"></div></div><div class="ki-row"><span>KI</span>${Array.from({length:8},(_,i)=>`<i class="ki-cell ${i<f.ki?'filled':''}"></i>`).join('')}<b>${f.ki}/8</b></div><div class="status">${[f.shield?`◈ Escudo ${f.shield}`:'',f.reaction?'↯ Reação preparada':'',f.transformed?'✦ Super Saiyajin':''].filter(Boolean).join(' · ')||'Forma base · Pronto para o combate'}</div></div>`;}
+function render(){ $('playerHud').innerHTML=hud(state.player,false);$('enemyHud').innerHTML=hud(state.enemy,true);$('round').textContent=`ROUND ${String(state.round).padStart(2,'0')}`;$('phase').textContent=state.winner?'FIM DO TREINO':state.turn==='player'?'SEU TURNO':'TURNO DA CPU';$('turnTitle').textContent=state.winner?'Treino concluído.':state.turn==='player'?'Sua vez de brilhar.':'Vegeta está planejando…';$('turnHint').textContent=state.turn==='player'?(state.actions?'Combine suas cartas. Encontre uma abertura.':'Suas ações acabaram. Encerre o turno para continuar.'):'Observe as técnicas do adversário e prepare sua resposta.';$('actions').innerHTML=`<b>${state.actions} / 2</b> AÇÕES`;$('endTurn').disabled=busy||state.turn!=='player'||!!state.winner;$('handCount').textContent=state.player.hand.length;$('deckCount').textContent=`▱ ${state.player.deck.length} NO BARALHO · ${state.player.discard.length} DESCARTE`;$('lastAction').textContent=state.log.at(-1);
+$('hand').replaceChildren();state.player.hand.forEach((key,i)=>{const c=CARDS[key],button=document.createElement('button');button.className=`card ${types[c.type]}`;button.disabled=busy||!canPlay(state,'player',i);button.setAttribute('aria-label',`${c.name}, ${c.cost} ki, ${c.actions||1} ações. ${c.description}`);button.innerHTML=`<div class="card-top"><span>${c.type}</span><b class="cost">${c.cost}</b></div><div class="card-art art-${key}"><span class="card-sprite"></span><span>${c.icon}</span></div><h3>${c.name}</h3><p>${c.description}</p><div class="card-stats"><span>${c.cost} KI</span><span>${c.actions||1} ${(c.actions||1)===1?'AÇÃO':'AÇÕES'}</span>${c.damage?`<span>${c.damage} DANO</span>`:''}</div><span class="card-foot">${c.transform&&state.player.transformed?'JÁ TRANSFORMADO':c.reaction&&state.player.reaction?'REAÇÃO JÁ PREPARADA':state.player.ki<c.cost?'KI INSUFICIENTE':state.actions<(c.actions||1)?'AÇÕES INSUFICIENTES':(c.actions===2?'02 AÇÕES · ':'01 AÇÃO · ')+(c.damage?'OFENSIVA':c.reaction?'PREPARAR':'SUPORTE')}</span>`;button.onclick=()=>execute('player',i);$('hand').append(button);});if(!state.player.hand.length)$('hand').innerHTML='<p class="empty">Sem cartas na mão. Encerre o turno para comprar mais.</p>';for(const [side,id]of [['player','goku'],['enemy','vegeta']]){ $(id).classList.toggle('transformed',state[side].transformed);$(id).classList.toggle('shielded',state[side].shield>0);$(id).classList.toggle('reaction-ready',state[side].reaction>0); };$('logList').replaceChildren(...state.log.map(t=>{const li=document.createElement('li');li.textContent=t;return li;}));if(gokuAnimator)gokuAnimator.cards();}
+async function execute(side,i){
+ if(busy||!canPlay(state,side,i))return;
+ const token=generation,key=state[side].hand[i],c=CARDS[key],target=side==='player'?'enemy':'player';
+ const source=$(side==='player'?'goku':'vegeta'),dest=$(side==='player'?'vegeta':'goku');
+ busy=true;source.dataset.move=key;render();
+ const beam=key==='beam'||key==='superBeam',ranged=beam||key==='blast',originalCombo=side==='player'&&key==='strike'&&!state.player.transformed&&gokuAnimator?.ready(),originalBurst=side==='player'&&key==='blast'&&!state.player.transformed&&gokuAnimator?.ready();
+ if(side==='player'&&(key==='beam'||key==='superBeam')&&gokuAnimator?.ready()){await executeKamehameha(i,token,key==='superBeam');return;}
+ if(key==='strike'){await executeContactCombo(side,i,token);return;}
+ source.classList.add(ranged?'charging':key==='strike'?'punching':key==='transform'?'powering':key==='charge'?'charging':'supporting');
+ if(originalCombo){source.style.setProperty('--combo-travel',(dest.getBoundingClientRect().left-source.getBoundingClientRect().left-95)+'px');source.classList.add('combining');}
+ if(ranged){$('lastAction').textContent=beam?(side==='player'?'Goku está preparando Kamehameha…':'Vegeta está preparando Galick Ho…'):'Concentrando energia…';}
+ await delay(originalCombo?1600:originalBurst?380:beam?950:ranged?450:key==='transform'?850:300);
+ if(token!==generation)return;
+ if(ranged){source.classList.remove('charging');source.classList.add('firing');const fx=document.createElement('div');fx.className=`battle-fx ${beam?'energy-beam':'energy-blast'} ${side==='enemy'?'reverse purple':''}`;if(beam&&side==='player'&&gokuAnimator?.ready()){const beamCanvas=gokuAnimator.beam();beamCanvas.className=fx.className+' original-beam';document.querySelector('.battle').append(beamCanvas);}else if(originalBurst){spawnKiBurst();}else document.querySelector('.battle').append(fx);}
+ if(originalBurst){await delay(330);if(token!==generation)return;spawnKiBurst();}
+ if(key==='strike'&&!originalCombo)source.classList.add('attacking');
+ await delay(ranged?220:key==='strike'?180:0);if(token!==generation)return;
+ const hp=state[target].hp;play(state,side,i);render();
+ if(c.damage){dest.classList.add('hit');if(hp>state[target].hp)dest.classList.add('impact');else dest.classList.add('blocked');$('effect').textContent=hp-state[target].hp?`−${hp-state[target].hp}`:'BLOQUEADO';}
+ else $('effect').textContent=c.transform?'SUPER SAIYAJIN':c.ki?'+2 KI':c.reaction?'REAÇÃO PRONTA':'+18 ESCUDO';
+ $('effect').classList.remove('show');void $('effect').offsetWidth;$('effect').classList.add('show');
+ await delay(beam?650:ranged?400:450);if(token!==generation)return;
+ clearBattleFx();busy=false;render();
+ if(state.winner){$('resultTitle').textContent=state.winner==='player'?'Você superou seus limites!':'Vegeta levou este round.';$('resultText').textContent=`Treino encerrado em ${state.round} rounds. ${state.winner==='player'?'Boa combinação de cartas e ki.':'Prepare suas defesas antes de gastar todo o ki.'}`;$('resultDialog').showModal();}
+}
+async function executeKamehameha(index,token,superPower=false){
+ const source=$('goku'),dest=$('vegeta');source.classList.add('kame-preparing');source.classList.toggle('super-kame',superPower);$('lastAction').textContent=superPower?'Goku concentra todo seu ki… Super Kamehameha!':'Goku concentra o ki e libera seu poder…';
+ await delay(1440);if(token!==generation)return;
+ source.classList.remove('super-kame','kame-preparing');source.classList.add('kame-firing');$('lastAction').textContent='Kame… hame… HA!';
+ await delay(540);if(token!==generation)return;
+ const beam=gokuAnimator.beam(superPower);beam.className='battle-fx energy-beam original-beam'+(superPower?' super-kame-beam':'');document.querySelector('.battle').append(beam);
+ await delay(220);if(token!==generation)return;
+ const hp=state.enemy.hp;play(state,'player',index);render();dest.classList.add('hit',hp>state.enemy.hp?'impact':'blocked');
+ $('effect').textContent=hp>state.enemy.hp?`−${hp-state.enemy.hp}`:'BLOQUEADO';$('effect').classList.remove('show');void $('effect').offsetWidth;$('effect').classList.add('show');
+ await delay(superPower?800:480);if(token!==generation)return;beam.remove();dest.classList.remove('hit','impact','blocked');source.classList.remove('kame-firing');source.classList.add('kame-recovering');
+ await delay(560);if(token!==generation)return;clearBattleFx();busy=false;render();
+ if(state.winner){$('resultTitle').textContent='Você superou seus limites!';$('resultText').textContent=`Treino encerrado em ${state.round} rounds.`;$('resultDialog').showModal();}
+}
+async function executeContactCombo(side,index,token){
+ const source=$(side==='player'?'goku':'vegeta'),dest=$(side==='player'?'vegeta':'goku'),target=side==='player'?'enemy':'player',direction=side==='player'?1:-1;
+ const start=source.getBoundingClientRect(),end=dest.getBoundingClientRect();
+ // Distância entre os centros: deixa o punho/chute alcançar o corpo do oponente.
+ const separation=Math.min(66,end.width*.64),travel=end.left+end.width/2-(start.left+start.width/2)-direction*separation;
+ const motion=source.animate([{translate:'0px 0px'},{translate:`${travel}px 0px`}],{duration:240,easing:'cubic-bezier(.2,.7,.3,1)',fill:'forwards'});comboMotions.add(motion);
+ $('lastAction').textContent=`${state[side].name} se aproxima para o combo…`;
+ await delay(240);if(token!==generation)return;
+ source.classList.add('punching');dest.classList.add('combo-receiving');
+ const arena=document.querySelector('.battle'),counter=document.createElement('div');counter.className='battle-fx combo-counter';arena.append(counter);
+ const blocked=state[target].shield+state[target].reaction>0;
+ let last=0,hits=0;for(const at of [160,320,480,720,1040,1280,1440,1600]){
+  await delay(at-last);last=at;if(token!==generation)return;hits++;
+  const bounds=arena.getBoundingClientRect(),body=dest.getBoundingClientRect(),x=body.left-bounds.left+body.width/2,y=body.top-bounds.top+72;
+  const spark=document.createElement('div');spark.className='battle-fx contact-spark'+(blocked?' guarded':'');spark.style.left=(x-direction*16+(hits%3-1)*9)+'px';spark.style.top=(y+(hits%2? -9:10))+'px';arena.append(spark);
+  const recoil=dest.animate([{translate:'0px 0px',filter:'brightness(1)'},{translate:`${direction*(hits===8?16:8)}px 0px`,filter:blocked?'brightness(1.5)':'brightness(2.5)'},{translate:'0px 0px',filter:'brightness(1)'}],{duration:150});comboMotions.add(recoil);recoil.onfinish=()=>comboMotions.delete(recoil);
+  counter.style.left=x+'px';counter.style.top=(y-106)+'px';counter.textContent=`${hits} ${blocked?'IMPACTOS NA DEFESA':'HITS'}`;$('lastAction').textContent=`${state[side].name}: combo em contato · ${hits} impactos.`;
+  spark.addEventListener('animationend',()=>spark.remove(),{once:true});
+ }
+ await delay(160);if(token!==generation)return;
+ const hp=state[target].hp;play(state,side,index);render();
+ counter.textContent=`${hits} HITS · ${hp-state[target].hp?'-'+(hp-state[target].hp)+' HP':'BLOQUEADO'}`;
+ $('effect').textContent=hp>state[target].hp?`−${hp-state[target].hp}`:'BLOQUEADO';$('effect').classList.remove('show');void $('effect').offsetWidth;$('effect').classList.add('show');
+ source.classList.remove('punching');dest.classList.remove('super-kame','kame-preparing','kame-firing','kame-recovering','combo-receiving');await delay(140);if(token!==generation)return;
+ motion.cancel();comboMotions.delete(motion);
+ const back=source.animate([{translate:`${travel}px 0px`},{translate:'0px 0px'}],{duration:260,easing:'ease-out',fill:'forwards'});comboMotions.add(back);
+ await delay(260);if(token!==generation)return;back.cancel();comboMotions.delete(back);clearBattleFx();busy=false;render();
+ if(state.winner){$('resultTitle').textContent=state.winner==='player'?'Você superou seus limites!':'Vegeta levou este round.';$('resultText').textContent=`Treino encerrado em ${state.round} rounds.`;$('resultDialog').showModal();}
+}
+function spawnKiBurst(){const projectile=gokuAnimator.blast();projectile.className='battle-fx energy-blast original-ki';document.querySelector('.battle').append(projectile);}
+function clearBattleFx(){for(const animation of comboMotions)animation.cancel();comboMotions.clear();document.querySelectorAll('.battle-fx').forEach(e=>e.remove());for(const id of ['goku','vegeta'])$(id).classList.remove('super-kame','kame-preparing','kame-firing','kame-recovering','combo-receiving','combining','charging','firing','powering','punching','supporting','attacking','hit','impact','blocked');}
+const delay=ms=>new Promise(r=>setTimeout(r,ms));$('endTurn').onclick=async()=>{if(busy||state.turn!=='player'||state.winner)return;const token=generation;endTurn(state);render();await delay(900);for(let n=0;n<2;n++){if(token!==generation||state.winner)return;const i=chooseEnemy(state);if(i<0)break;await execute('enemy',i);await delay(400);}if(token!==generation||state.winner)return;endTurn(state);render();};
+function reset(){generation++;busy=false;clearBattleFx();state=createGame();document.querySelectorAll('dialog[open]').forEach(d=>d.close());render();} $('restart').onclick=reset;$('playAgain').onclick=reset;$('help').onclick=()=>$('helpDialog').showModal();$('logButton').onclick=()=>$('logDialog').showModal();document.querySelectorAll('.close,.close-help').forEach(b=>b.onclick=()=>b.closest('dialog').close());render();
+
+function setSprite(id,src){const fighter=$(id);let img=fighter.querySelector('.sprite-img');if(!img){img=document.createElement('img');img.className='sprite-img';img.alt='';fighter.append(img);}img.src=src;fighter.classList.add('has-sprite');fighter.classList.remove('atlas-fighter');}
+$('spriteButton').onclick=()=>$('spriteDialog').showModal();
+for(const id of ['goku','vegeta'])$(id+'Upload').onchange=async e=>{const file=e.target.files[0];if(!file)return;if(!['image/png','image/webp'].includes(file.type)||file.size>8*1024*1024){$('spriteStatus').textContent='Use PNG ou WebP de até 8 MB.';return;}try{const src=await new Promise((resolve,reject)=>{const reader=new FileReader();reader.onload=()=>resolve(reader.result);reader.onerror=reject;reader.readAsDataURL(file);});const probe=new Image();probe.src=src;await probe.decode();setSprite(id,src);$('spriteStatus').textContent='Sprite aplicado! Feche esta janela para testar.';}catch{$('spriteStatus').textContent='Não foi possível abrir essa imagem. Tente outro arquivo.'}};
+$('spriteScale').oninput=e=>{document.querySelectorAll('.fighter').forEach(f=>{f.style.setProperty('--sprite-height',Math.round(Number(e.target.value)*168/110)+'px');f.style.setProperty('--sprite-width',Math.round(Number(e.target.value)*145/110)+'px');});};
+$('restoreSprites').onclick=()=>{document.querySelectorAll('.sprite-img').forEach(i=>i.remove());document.querySelectorAll('.fighter').forEach(f=>{f.classList.remove('has-sprite');f.style.removeProperty('--sprite-height');f.style.removeProperty('--sprite-width');});$('spriteScale').value=110;document.querySelectorAll('#spriteDialog input[type=file]').forEach(i=>i.value='');restoreAtlas();$('spriteStatus').textContent='Visuais restaurados.';};
+
+function restoreAtlas(){for(const id of ['goku','vegeta']){const f=$(id);f.classList.add('atlas-fighter');if(!f.querySelector('.atlas-sprite')){const sprite=document.createElement('div');sprite.className='atlas-sprite';f.append(sprite);}}}
+restoreAtlas();
+
+// Coordenadas na referência de 731 px; escaladas para o PNG original intacto.
+// [x, y, largura, altura, duração em ms, ponto de apoio horizontal opcional]
+const GOKU_CLIPS={
+ kamePrepare:[[87,627,24,37,140],[117,623,40,41,140],[159,608,48,56,180],[210,607,49,57,220],[266,621,40,43,140],[313,621,38,43,140],[357,618,35,45,140],[401,607,48,57,180],[457,623,23,41,160]],
+ kameFire:[[45,702,29,39,100],[79,702,26,39,100],[115,702,25,39,100],[152,697,32,44,140],[197,702,26,39,100],[236,702,30,39,120],[276,703,27,38,200]],
+ kameRecover:[[357,618,35,45,140],[313,621,38,43,140],[266,621,40,43,140],[87,627,24,37,140]],
+ kiBurst:[[44,539,26,38,100,56],[80,539,33,38,180,94],[123,539,33,38,100,139],[158,539,59,38,230,172],[222,539,31,38,100,238],[257,539,58,38,240,272]],
+ idle:[[112,90,23,35,220],[142,86,23,39,240],[172,87,23,38,220],[204,89,24,36,240]],
+ strike:[[44, 294, 27, 40, 80], [76, 296, 28, 38, 80], [109, 297, 35, 37, 80], [144, 296, 31, 38, 80], [176, 296, 34, 38, 80], [212, 293, 29, 41, 80], [241, 297, 36, 37, 80], [281, 296, 29, 38, 80], [313, 294, 25, 40, 80], [343, 292, 28, 40, 80], [372, 298, 33, 33, 80], [410, 298, 33, 33, 80], [44, 353, 25, 38, 80], [71, 353, 29, 39, 80], [105, 353, 26, 39, 80], [139, 354, 33, 35, 80], [172, 355, 34, 35, 80], [212, 355, 27, 37, 80], [245, 354, 24, 38, 80], [270, 354, 36, 35, 80], [308, 353, 37, 36, 80], [347, 351, 26, 39, 80]],
+ charge:[[87,627,24,37,180],[117,623,40,41,180],[159,608,48,56,180],[210,607,49,57,220]],
+ beamCharge:[[124,539,31,38,220],[158,538,59,39,200,172],[124,539,31,38,200],[158,538,59,39,240,172]],
+ fire:[[158,538,35,39,180,172],[257,538,35,39,180,272]],
+ hurt:[[73,480,31,33,140],[105,475,36,38,160],[144,475,24,38,180]],
+ evade:[[373,297,32,33,100],[410,297,33,33,140]],
+ transform:[[117,623,40,41,140],[159,608,48,56,140],[210,607,49,57,180],[266,621,40,43,160],[313,621,38,43,160],[357,618,35,45,180],[401,607,48,57,220]],
+ ssjIdle:[[401,607,48,57,240]],
+ ssjCharge:[[152,697,32,44,230],[197,702,26,39,200],[152,697,32,44,220]],
+ ssjFire:[[236,702,30,39,160],[276,703,29,38,180]],
+ ssjStrike:[[457,623,23,41,110],[197,702,26,39,100],[237,702,29,39,140]]
+};
+var gokuAnimator;
+function makeGokuAnimator(){
+ const fighter=$('goku'),canvas=document.createElement('canvas');canvas.className='goku-frames';canvas.width=256;canvas.height=336;canvas.setAttribute('aria-hidden','true');fighter.append(canvas);
+ const ctx=canvas.getContext('2d'),sheet=new Image();sheet.src='/assets/goku-original.png';
+ const cache=new Map();let active='',started=0,preview=null,ready=false;
+ function frameTexture(f){const key=f.slice(0,4).join(',');if(cache.has(key))return cache.get(key);const scale=sheet.naturalWidth/731,[x,y,w,h]=f;const cut=document.createElement('canvas');cut.width=Math.ceil(w*scale);cut.height=Math.ceil(h*scale);const c=cut.getContext('2d',{willReadFrequently:true});c.drawImage(sheet,Math.round(x*scale),Math.round(y*scale),cut.width,cut.height,0,0,cut.width,cut.height);
+ // Remove somente o branco conectado às bordas, preservando os brancos internos.
+ const data=c.getImageData(0,0,cut.width,cut.height),px=data.data,W=cut.width,H=cut.height,seen=new Uint8Array(W*H),queue=[];
+ const add=(n)=>{if(n<0||n>=W*H||seen[n])return;seen[n]=1;const i=n*4;if(px[i]>=244&&px[i+1]>=244&&px[i+2]>=244)queue.push(n);};
+ for(let x=0;x<W;x++){add(x);add((H-1)*W+x);}for(let y=0;y<H;y++){add(y*W);add(y*W+W-1);}for(let q=0;q<queue.length;q++){const n=queue[q];px[n*4+3]=0;const x=n%W;if(x)add(n-1);if(x<W-1)add(n+1);add(n-W);add(n+W);}c.putImageData(data,0,0);cache.set(key,cut);return cut;}
+ function paintCards(){if(!ready)return;const mapping={strike:'strike',blast:'kiBurst',beam:'ssjFire',superBeam:'ssjFire',charge:'charge',guard:'idle',evade:'evade',transform:'ssjIdle'};for(const [key,name]of Object.entries(mapping)){const el=document.querySelector('.art-'+key+' .card-sprite');if(el){el.style.backgroundImage='url("'+frameTexture(key==='superBeam'?[303,674,260,91,1]:GOKU_CLIPS[name][key==='beam'?0:key==='blast'?3:key==='strike'?6:0]).toDataURL()+'")';el.style.backgroundSize='contain';el.style.backgroundPosition='center';}}}
+ function current(){if(preview)return preview;if(fighter.classList.contains('kame-preparing'))return 'kamePrepare';if(fighter.classList.contains('kame-firing'))return 'kameFire';if(fighter.classList.contains('kame-recovering'))return 'kameRecover';const ssj=fighter.classList.contains('transformed');if(fighter.dataset.move==='blast'&&!ssj&&(fighter.classList.contains('charging')||fighter.classList.contains('firing')))return 'kiBurst';if(fighter.classList.contains('hit')||fighter.classList.contains('combo-receiving'))return ssj?'ssjIdle':'hurt';if(fighter.classList.contains('powering'))return 'transform';if(fighter.classList.contains('firing'))return ssj?'ssjFire':'fire';if(fighter.classList.contains('punching'))return ssj?'ssjStrike':'strike';if(fighter.classList.contains('charging'))return ssj?'ssjCharge':fighter.dataset.move==='beam'?'beamCharge':'charge';return ssj?'ssjIdle':'idle';}
+ function tick(t){if(ready&&fighter.classList.contains('atlas-fighter')){const name=current();if(name!==active){active=name;started=t;}const frames=GOKU_CLIPS[name],duration=frames.reduce((a,f)=>a+f[4],0);const loop=!!preview||['idle','charge','beamCharge','ssjIdle','ssjCharge'].includes(name);let elapsed=loop?(t-started)%duration:Math.min(t-started,duration-1),frame=frames[0];for(const f of frames){frame=f;if(elapsed<f[4])break;elapsed-=f[4];}const tex=frameTexture(frame),s=sheet.naturalWidth/731,z=256/48/s;ctx.clearRect(0,0,canvas.width,canvas.height);ctx.imageSmoothingEnabled=false;const anchor=(frame[5]===undefined?frame[2]/2:frame[5]-frame[0])*s;ctx.drawImage(tex,128-anchor*z,canvas.height-18-tex.height*z,tex.width*z,tex.height*z);canvas.dataset.clip=name;canvas.dataset.frame=String(frames.indexOf(frame));const pc=$('animationPreview');if(pc&&$('spriteDialog').open){const context=pc.getContext('2d');context.clearRect(0,0,pc.width,pc.height);context.imageSmoothingEnabled=false;context.drawImage(canvas,0,0,pc.width,pc.height);$('animationFrame').textContent=`Quadro ${frames.indexOf(frame)+1} / ${frames.length}`;}}requestAnimationFrame(tick);}
+ sheet.onload=()=>{ready=true;paintCards();fighter.classList.add('original-sprites');$('spriteStatus').textContent='Goku usa os quadros da folha original. Vegeta mantém o atlas anterior.';};sheet.onerror=()=>{$('spriteStatus').textContent='Falha ao carregar a folha de Goku. O visual anterior foi mantido.';};requestAnimationFrame(tick);return {preview(name){preview=name;active='';},clear(){preview=null;active='';},cards:paintCards,blast(){const texture=frameTexture([185,540,31,36,1]),copy=document.createElement('canvas');copy.width=texture.width;copy.height=texture.height;copy.getContext('2d').drawImage(texture,0,0);return copy;},beam(superPower=false){const texture=frameTexture([303,674,260,91,1]),copy=document.createElement('canvas');const arena=document.querySelector('.battle').getBoundingClientRect(),source=$('goku').getBoundingClientRect(),target=$('vegeta').getBoundingClientRect();const left=source.left-arena.left+source.width/2+32,width=Math.max(130,target.left-arena.left+target.width/2+22-left),height=superPower?BEAM_HEIGHT.super:BEAM_HEIGHT.normal;copy.width=Math.round(width*2);copy.height=height*2;copy.style.left=left+'px';copy.style.top=(source.top-arena.top+68-height/2)+'px';copy.style.width=width+'px';copy.style.height=height+'px';const c=copy.getContext('2d');c.imageSmoothingEnabled=false;const cap=texture.width*.28,outCap=Math.min(copy.width*.35,cap/texture.height*copy.height);c.drawImage(texture,0,0,cap,texture.height,0,0,outCap,copy.height);c.drawImage(texture,cap,0,texture.width-2*cap,texture.height,outCap,0,copy.width-2*outCap,copy.height);c.drawImage(texture,texture.width-cap,0,cap,texture.height,copy.width-outCap,0,outCap,copy.height);return copy;},ready:()=>ready};
+}
+gokuAnimator=makeGokuAnimator();
+
+$('animationSelect').onchange=e=>gokuAnimator.preview(e.target.value);
+$('spriteButton').addEventListener('click',()=>gokuAnimator.preview($('animationSelect').value));
+$('spriteDialog').addEventListener('close',()=>gokuAnimator.clear());
+
+// Composição do cenário a partir da folha original, sem modificar o arquivo.
+function mountTemple(){
+ const canvas=$('templeScenery'),context=canvas.getContext('2d'),image=new Image();image.src='/assets/temple-original.png';let architecture;
+ function draw(){if(!architecture)return;const box=canvas.getBoundingClientRect(),dpr=Math.min(window.devicePixelRatio||1,2);if(!box.width||!box.height)return;canvas.width=Math.round(box.width*dpr);canvas.height=Math.round(box.height*dpr);context.setTransform(dpr,0,0,dpr,0,0);context.imageSmoothingEnabled=false;const w=box.width,h=box.height;context.clearRect(0,0,w,h);
+  // Só a região azul da folha: exclui a faixa de créditos e o verde inferior.
+  context.drawImage(image,369,0,256,255,0,0,w,h);
+  // Um único enquadramento contínuo: não repete fatias do teto/piso.
+  // Em telas estreitas, recorta as laterais em vez de comprimir as colunas.
+  const sceneWidth=Math.max(w,h*368/273),left=(w-sceneWidth)/2;
+  context.drawImage(architecture,0,0,368,273,left,0,sceneWidth,h);canvas.dataset.ready='true';
+ }
+ image.onload=()=>{architecture=document.createElement('canvas');architecture.width=368;architecture.height=273;const c=architecture.getContext('2d',{willReadFrequently:true});c.drawImage(image,0,0,368,273,0,0,368,273);const pixels=c.getImageData(0,0,368,273);for(let i=0;i<pixels.data.length;i+=4){if(pixels.data[i+1]>55&&pixels.data[i+1]>pixels.data[i]+25&&pixels.data[i+1]>pixels.data[i+2]+25)pixels.data[i+3]=0;}c.putImageData(pixels,0,0);draw();};
+ image.onerror=()=>console.error('Não foi possível carregar a folha do templo.');new ResizeObserver(draw).observe(canvas);
+}
+mountTemple();
