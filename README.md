@@ -69,7 +69,7 @@ Aura: Goku usa o efeito presente nos sprites originais, sem a antiga aura geomé
 
 A área de desenho de Goku tem espaço vertical adicional para os quadros altos de aura. A escala do pixel e o alinhamento dos pés são preservados.
 
-Rajada de Ki: quatro projéteis e quatro impactos de 5 de dano (20 total), com vida e defesas atualizadas por acerto. A reação é consumida no primeiro impacto; o escudo absorve o dano restante até acabar. O bônus SSJ de +8 é distribuído entre os quatro disparos (+2 cada). O projétil e o impacto usam os PNGs originais enviados no ZIP. O fundo roxo é removido durante a renderização; os originais ficam intactos em assets. São imagens estáticas animadas pelo jogo, sem quadros adicionais inventados.
+Rajada de Ki: quatro projéteis e quatro impactos de 5 de dano (20 total), com vida e defesas atualizadas por acerto. A reação é consumida no primeiro impacto; o escudo absorve o dano restante até acabar. O bônus SSJ de +8 é distribuído entre os quatro disparos (+2 cada). O projétil e o impacto usam os PNGs originais enviados no ZIP. O fundo de cada imagem é removido durante a renderização; os originais ficam intactos em assets. São imagens estáticas animadas pelo jogo, sem quadros adicionais inventados.
 
 Super Kamehameha: o impacto reproduz os 10 quadros (5 colunas × 2 linhas) de `assets/super-impact-original.png`, folha fornecida pelo usuário. O efeito começa quando o feixe atinge o alvo e termina na fumaça. O dano é aplicado uma única vez. O arquivo original permanece intacto; o resíduo de alfa muito baixo é removido na renderização para evitar uma caixa escura sobre a arena. Reiniciar cancela o efeito.
 
@@ -81,3 +81,5 @@ Selecione habilidade, personagem, forma inicial e defesa do alvo. Clique em Repr
 “Testar sprites” abre a prévia das sequências individuais do Goku. Para interromper e recomeçar a habilidade inteira, use “Limpar teste”. O laboratório é para inspeção visual e não salva alterações nas cartas ou no código.
 
 A Rajada usa poses do Goku sem o clarão embutido da folha. O projétil é desenhado separadamente em 38 × 32 px, alinhado à palma, evitando a faixa vertical de energia junto à mão. Dano e custos permanecem os mesmos.
+
+A arte do projétil da Rajada foi substituída pelo PNG enviado em “Captura de tela 2026-11-05 095525.zip”. O fundo vermelho é removido ao carregar; a carta usa a mesma imagem. O impacto anterior e as regras de quatro acertos de 5 de dano permanecem.

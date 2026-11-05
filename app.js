@@ -190,7 +190,7 @@ const burstArtReady=Promise.all(['projectile','impact'].map(async kind=>{
  if(right<left)throw new Error('Arte vazia: '+kind);ctx.putImageData(data,0,0);const cut=document.createElement('canvas');cut.width=right-left+1;cut.height=bottom-top+1;cut.getContext('2d').drawImage(canvas,left,top,cut.width,cut.height,0,0,cut.width,cut.height);burstArt[kind]=cut;
 })).then(()=>paintBurstCard());
 function makeBurstArt(kind){const art=burstArt[kind],canvas=document.createElement('canvas');canvas.width=art.width;canvas.height=art.height;canvas.getContext('2d').drawImage(art,0,0);canvas.dataset.art=kind;return canvas;}
-function paintBurstCard(){const art=document.querySelector('.art-blast .card-sprite');if(art&&burstArt.projectile){art.style.backgroundImage='url("'+burstArt.projectile.toDataURL()+'")';art.style.backgroundSize='58px auto';art.style.backgroundPosition='center';}}
+function paintBurstCard(){const art=document.querySelector('.art-blast .card-sprite');if(art&&burstArt.projectile){art.style.backgroundImage='url("'+burstArt.projectile.toDataURL()+'")';art.style.backgroundSize='contain';art.style.backgroundPosition='center';}}
 
 // Folha de explosão original: cinco colunas e duas linhas.
 var superImpactSheet;
