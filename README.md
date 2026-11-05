@@ -83,3 +83,5 @@ Selecione habilidade, personagem, forma inicial e defesa do alvo. Clique em Repr
 A Rajada usa poses do Goku sem o clarão embutido da folha. O projétil é desenhado separadamente em 38 × 32 px, alinhado à palma, evitando a faixa vertical de energia junto à mão. Dano e custos permanecem os mesmos.
 
 A arte do projétil da Rajada foi substituída pelo PNG enviado em “Captura de tela 2026-11-05 095525.zip”. O fundo vermelho é removido ao carregar; a carta usa a mesma imagem. O impacto anterior e as regras de quatro acertos de 5 de dano permanecem.
+
+Emissão da Rajada: a arte substituta aparece na palma durante 100 ms antes de cada um dos quatro projéteis. As poses da prévia individual também removem o clarão antigo embutido e compõem a nova arte na emissão. O projétil sai da mesma região da mão; não há dano adicional na emissão.
