@@ -54,7 +54,7 @@ Cada jogador tem 100 de vida, até 8 ki e 2 ações por turno. No início de cad
 | Super Saiyajin | 4 | 1 | Ativa transformação |
 
 ## Animações e sprites
-Goku usa quadros de `assets/goku-original.png`, folha enviada pelo usuário, com créditos visíveis a Que / Ultimate LSW. O PNG original fica intacto; o jogo seleciona os quadros em Canvas e aplica transparência ao branco conectado às bordas. Vegeta usa o atlas da versão anterior.
+A identidade padrão usa os atlas `assets/identity-goku.png` e `assets/identity-vegeta.png`, com o Kamehameha base em uma folha dedicada. A Rajada base preserva a sequência selecionada pelo usuário. As referências anteriores, incluindo `assets/goku-original.png` (Que / Ultimate LSW), permanecem intactas e podem ser comparadas no laboratório.
 
 A opção “Testar sprites” permite visualizar sequências separadamente e importar outras poses para experimentar na sessão. O combo aproxima o atacante do alvo e apresenta oito impactos visuais; o dano é aplicado uma única vez. Reiniciar cancela animações pendentes.
 
@@ -84,3 +84,8 @@ Rajada refeita com os arquivos “Rajada.zip” e “Projétil de Fogo Pixelado 
 
 
 Kamehameha na forma base: nova animação de oito poses desenhada a partir das referências do usuário, em `assets/base-kame-atlas.png`. Goku permanece de cabelo preto durante preparação, carga azul, disparo e recuperação. A técnica na forma base não apresenta transformação temporária. Mantidos 4 ki, 2 ações e 50 de dano base. A carta usa uma pose nova; o laboratório inclui a sequência completa e as fases separadas. A forma SSJ e o Super Kamehameha preservam suas sequências anteriores.
+
+## Identidade visual unificada
+Goku e Vegeta usam novos atlas de 16 poses, desenhados para acompanhar a identidade pixel art do Kamehameha base. A interface, os HUDs e as cartas usam a mesma paleta azul-escura, laranja e ciano, com contornos e painéis mais próximos da arte dos personagens. O templo e os efeitos fornecidos pelo usuário continuam integrados. As mecânicas, custos e danos não mudam.
+
+Conforme solicitado, a Rajada do Goku base mantém a sequência original de seis poses de `Rajada.zip` e o mesmo arquivo de projétil de fogo; ela tem prioridade sobre o novo atlas. No laboratório, “Estilo visual” permite comparar a identidade unificada com as referências anteriores. O Kamehameha base continua usando sua folha nova dedicada.
