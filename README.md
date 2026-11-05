@@ -106,7 +106,7 @@ O original está em `assets/gogeta-original.png`. `python tools/export_gogeta.py
 
 ### Kienzan
 
-Habilidade de 3 ki, 2 ações e 40 de dano base. Disponível no baralho e no laboratório. `Kienzan Throw.ase` fornece os 9 quadros de lançamento do Goku base; `Kienzan.ase` fornece os 2 quadros do disco giratório, com 100 ms por quadro em ambos. O disco sai no sétimo quadro e o dano é aplicado uma vez ao atingir o alvo, respeitando defesas e o bônus das transformações. Nas outras formas e em Vegeta, o disco acompanha as poses já existentes.
+Habilidade de 3 ki, 2 ações e 40 de dano base. Disponível no baralho e no laboratório. `Kienzan Throw.ase` fornece os 9 quadros de lançamento do Goku base; `Kienzan.ase` fornece os 2 quadros do disco giratório, com 100 ms por quadro em ambos. São lançados 3 discos em sequência: o primeiro sai no sétimo quadro, e o gesto de lançamento se repete para os outros dois. Os 40 de dano totais são aplicados uma única vez no terceiro impacto, respeitando defesas e o bônus das transformações. O custo continua em 3 ki e 2 ações por carta. Nas outras formas e em Vegeta, o disco acompanha as poses já existentes.
 
 Os originais estão em `assets/`. Para refazer as exportações:
 

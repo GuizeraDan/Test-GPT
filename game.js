@@ -3,7 +3,7 @@ export const CARDS={
  superBeam:{name:'Super Kamehameha',type:'TÉCNICA',cost:8,actions:2,icon:'波',description:'Libera um feixe massivo. Causa 80 de dano.',damage:80},
  blast:{name:'Rajada de ki',type:'TÉCNICA',cost:2,icon:'✦',description:'Dispara 4 rajadas de 5 de dano. Total: 20.',damage:20,hits:4},
  beam:{name:'Kamehameha',type:'TÉCNICA',cost:4,actions:2,icon:'波',description:'Causa 50 de dano. Concentra ki e dispara um feixe azul.',damage:50},
- kienzan:{name:'Kienzan',type:'HABILIDADE',cost:3,actions:2,icon:'◒',description:'Lança um disco de energia. Causa 40 de dano.',damage:40},
+ kienzan:{name:'Kienzan',type:'HABILIDADE',cost:3,actions:2,icon:'◒',description:'Lança 3 discos de energia. Causa 40 de dano no total.',damage:40,projectiles:3},
  charge:{name:'Concentrar ki',type:'HABILIDADE',cost:0,icon:'気',description:'Recupera 2 de ki. Consome uma ação.',ki:2},
  guard:{name:'Postura defensiva',type:'HABILIDADE',cost:1,icon:'盾',description:'Recebe 18 de escudo até seu próximo turno.',shield:18},
  evade:{name:'Reflexo veloz',type:'REAÇÃO',cost:1,icon:'↯',description:'Prepara uma reação: reduz o próximo ataque em 15.',reaction:15},

@@ -381,12 +381,22 @@ async function executeKienzan(side,index,token){
  const overhead={x:center,y:a.top-arena.top-12},held=native?null:spawnKienzanDisc(side,token,overhead,overhead);
  // O sétimo quadro inicia o gesto de lançamento no arquivo original.
  await delay(kienzanArt.throw.metadata.frames.slice(0,6).reduce((n,f)=>n+f.duration,0));if(token!==generation)return;
- held?.remove();source.classList.remove('charging');source.classList.add('firing');$('lastAction').textContent='Kienzan!';
- const start={x:center+direction*42,y:a.top-arena.top+55},end={x:b.left-arena.left+b.width/2,y:b.top-arena.top+68},disc=spawnKienzanDisc(side,token,start,end,380);
- await delay(380);if(token!==generation)return;disc.remove();
- const hp=state[target].hp;play(state,side,index);render();const damage=hp-state[target].hp;dest.classList.add('hit',damage?'impact':'blocked');
- const spark=document.createElement('div');spark.className='battle-fx contact-spark'+(damage?'':' guarded');spark.style.left=end.x+'px';spark.style.top=end.y+'px';document.querySelector('.battle').append(spark);spark.addEventListener('animationend',()=>spark.remove(),{once:true});
- $('effect').textContent=damage?`−${damage}`:'BLOQUEADO';$('effect').classList.remove('show');void $('effect').offsetWidth;$('effect').classList.add('show');
- await delay(240);if(token!==generation)return;clearBattleFx();busy=false;render();
+ held?.remove();source.classList.remove('charging');source.classList.add('firing');
+ const start={x:center+direction*42,y:a.top-arena.top+55},end={x:b.left-arena.left+b.width/2,y:b.top-arena.top+68},shots=CARDS.kienzan.projectiles;
+ const preparation=kienzanArt.throw.metadata.frames.slice(0,6).reduce((n,f)=>n+f.duration,0);
+ for(let shot=0;shot<shots;shot++){
+  // Repete o gesto de lançamento (quadros 7–9) para cada disco.
+  source.dataset.kienzanStart=String(animationClock.time-preparation);$('lastAction').textContent=`Kienzan! Disco ${shot+1}/${shots}.`;
+  const disc=spawnKienzanDisc(side,token,start,end,380);disc.dataset.shot=String(shot+1);
+  await delay(380);if(token!==generation)return;disc.remove();
+  let damage=0;
+  // A carta continua sendo um ataque de 40 de dano, cobrado uma única vez.
+  if(shot===shots-1){const hp=state[target].hp;play(state,side,index);render();damage=hp-state[target].hp;}
+  const blocked=shot===shots-1?!damage:state[target].shield+state[target].reaction>0;dest.classList.add('hit',blocked?'blocked':'impact');
+  const spark=document.createElement('div');spark.className='battle-fx contact-spark'+(blocked?' guarded':'');spark.style.left=end.x+'px';spark.style.top=end.y+'px';document.querySelector('.battle').append(spark);spark.addEventListener('animationend',()=>spark.remove(),{once:true});
+  $('effect').textContent=`${shot+1}/${shots} · ${shot===shots-1?(damage?'−'+damage:'BLOQUEADO'):'KIENZAN'}`;$('effect').classList.remove('show');void $('effect').offsetWidth;$('effect').classList.add('show');
+  await delay(140);if(token!==generation)return;dest.classList.remove('hit','impact','blocked');
+ }
+ clearBattleFx();busy=false;render();
  if(state.winner&&!labMode){$('resultTitle').textContent=state.winner==='player'?'Você superou seus limites!':'Vegeta levou este round.';$('resultText').textContent=`Treino encerrado em ${state.round} rounds.`;$('resultDialog').showModal();}
 }
