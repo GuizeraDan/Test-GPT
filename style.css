@@ -48,3 +48,10 @@
 .fighter.transformed .aura{animation:auraBreathe .7s ease-in-out infinite alternate}@keyframes auraBreathe{from{opacity:.7;scale:.96 1}to{opacity:1;scale:1.03 1.04}}@media(prefers-reduced-motion:reduce){.fighter.transformed .aura{animation:none}}
 
 .goku-frames{height:calc(var(--sprite-height,185px) * 1.3125)}#animationPreview{height:289px}@media(max-width:750px){.goku-frames{height:calc(var(--sprite-height,155px) * 1.3125)}}
+
+.burst-shot{width:70px;height:70px;image-rendering:pixelated;z-index:7;pointer-events:none}.burst-shot.reverse{transform:scaleX(-1)}div.burst-shot{background:radial-gradient(ellipse,#fff6bf 10%,#ffd846 35%,#ff9e14 50%,transparent 65%);filter:drop-shadow(0 0 5px #ffb438)}
+
+/* Impacto provisório de Rajada: núcleo branco e faíscas amarelas em pixel art. */
+.burst-impact{width:58px;height:58px;translate:-50% -50%;z-index:9;image-rendering:pixelated;animation:burstImpact .19s steps(3,end) forwards}div.burst-impact::before{content:'';position:absolute;inset:9px;background:#ffe12f;clip-path:polygon(40% 0,55% 0,60% 20%,75% 25%,80% 40%,100% 45%,100% 60%,80% 65%,70% 85%,55% 85%,50% 100%,35% 85%,20% 85%,20% 65%,0 60%,0 45%,20% 35%,25% 20%,40% 20%)}div.burst-impact::after{content:'';position:absolute;left:22px;top:20px;width:16px;height:18px;background:#fffbd9;box-shadow:-19px -15px 0 -5px #ffe831,-26px -19px 0 -6px #ffe831,22px 14px 0 -5px #ffe831,27px 19px 0 -6px #ffe831,-19px 17px 0 -6px #ffe831,17px -15px 0 -6px #ffe831;clip-path:none}div.burst-impact.guarded::before{background:#7ee8ff}div.burst-impact.guarded::after{box-shadow:-19px -15px 0 -5px #7ee8ff,22px 14px 0 -5px #7ee8ff}@keyframes burstImpact{0%{scale:.55;opacity:1}35%{scale:1.1;opacity:1}70%{scale:.9;opacity:1}100%{scale:1.25;opacity:0}}
+
+canvas.burst-shot{width:64px;height:58px;object-fit:contain;filter:none}canvas.burst-impact{width:74px;height:60px;object-fit:contain;animation:burstArtImpact .22s steps(3,end) forwards}canvas.burst-impact.guarded{filter:drop-shadow(0 0 3px #9cf3ff)}@keyframes burstArtImpact{0%{scale:.7;opacity:1}45%{scale:1;opacity:1}75%{scale:1.1;opacity:1}100%{scale:1.15;opacity:0}}

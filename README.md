@@ -45,7 +45,7 @@ Cada jogador tem 100 de vida, até 8 ki e 2 ações por turno. No início de cad
 | Carta | Ki | Ações | Efeito base |
 | --- | --- | --- | --- |
 | Combo de golpes | 1 | 2 | 12 de dano |
-| Rajada de ki | 2 | 1 | 19 de dano |
+| Rajada de ki | 2 | 1 | 4 × 5 = 20 de dano |
 | Kamehameha | 4 | 2 | 50 de dano |
 | Super Kamehameha | 8 | 2 | 80 de dano |
 | Concentrar ki | 0 | 1 | +2 ki |
@@ -68,3 +68,5 @@ A folha fornecida pelo usuário está em `assets/temple-original.png` (ShadeDBZ)
 Aura: Goku usa o efeito presente nos sprites originais, sem a antiga aura geométrica ou anéis CSS sobrepostos. Sua postura SSJ usa a pose com aura dourada da folha. Vegeta mantém um brilho provisório suave, atrás do personagem, alinhado aos pés.
 
 A área de desenho de Goku tem espaço vertical adicional para os quadros altos de aura. A escala do pixel e o alinhamento dos pés são preservados.
+
+Rajada de Ki: quatro projéteis e quatro impactos de 5 de dano (20 total), com vida e defesas atualizadas por acerto. A reação é consumida no primeiro impacto; o escudo absorve o dano restante até acabar. O bônus SSJ de +8 é distribuído entre os quatro disparos (+2 cada). O projétil e o impacto usam os PNGs originais enviados no ZIP. O fundo roxo é removido durante a renderização; os originais ficam intactos em assets. São imagens estáticas animadas pelo jogo, sem quadros adicionais inventados.
