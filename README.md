@@ -98,8 +98,19 @@ Enquanto está transformado, Goku usa `assets/Idle SSJ.ase`: 12 quadros RGBA de 
 
 ### Gogeta Super Sayajin (teste)
 
-A carta custa 4 ki e 1 ação, concede +8 de dano e mantém o custo de 1 ki por turno. Está no baralho e no laboratório, que agora contém 9 cartas. Pode substituir a forma SSJ sem acumular bônus.
+A carta custa 4 ki e 1 ação, concede +8 de dano e mantém o custo de 1 ki por turno. Está no baralho e no laboratório, que agora contém 10 cartas. Pode substituir a forma SSJ sem acumular bônus.
 
 A transformação reproduz as 9 poses da folha enviada; a última vira a postura final. A folha não inclui ataques próprios: Gogeta mantém essa postura durante os efeitos das técnicas. Use “Forma inicial → Gogeta Super Sayajin” para testar as demais cartas nessa forma, ou “Testar sprites → Gogeta Super Sayajin” para inspecionar os quadros. Pausa, avanço e velocidade também funcionam na transformação.
 
 O original está em `assets/gogeta-original.png`. `python tools/export_gogeta.py` reproduz os recortes, remove o branco conectado às bordas e alinha os pés sem redesenhar a arte.
+
+### Kienzan
+
+Habilidade de 3 ki, 2 ações e 40 de dano base. Disponível no baralho e no laboratório. `Kienzan Throw.ase` fornece os 9 quadros de lançamento do Goku base; `Kienzan.ase` fornece os 2 quadros do disco giratório, com 100 ms por quadro em ambos. O disco sai no sétimo quadro e o dano é aplicado uma vez ao atingir o alvo, respeitando defesas e o bônus das transformações. Nas outras formas e em Vegeta, o disco acompanha as poses já existentes.
+
+Os originais estão em `assets/`. Para refazer as exportações:
+
+```bash
+python tools/export_aseprite.py assets/Kienzan.ase assets/kienzan-disc
+python tools/export_aseprite.py "assets/Kienzan Throw.ase" assets/kienzan-throw
+```

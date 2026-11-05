@@ -75,3 +75,5 @@ canvas.burst-shot{width:38px;height:32px;object-fit:contain;filter:drop-shadow(0
 .gogeta-visible .gogeta-frames{display:block}.gogeta-visible .goku-frames,.gogeta-visible .atlas-sprite,.gogeta-visible .aura,.gogeta-visible:after{display:none!important}
 @media(max-width:750px){.gogeta-frames{width:calc(var(--sprite-width,155px) * 1.5);height:calc(var(--sprite-height,155px) * 1.3125)}}
 .vegeta .gogeta-frames{transform:scaleX(-1)}
+
+canvas.kienzan-disc{position:absolute;width:128px;height:128px;z-index:9;image-rendering:pixelated;pointer-events:none}

@@ -3,13 +3,14 @@ export const CARDS={
  superBeam:{name:'Super Kamehameha',type:'TÉCNICA',cost:8,actions:2,icon:'波',description:'Libera um feixe massivo. Causa 80 de dano.',damage:80},
  blast:{name:'Rajada de ki',type:'TÉCNICA',cost:2,icon:'✦',description:'Dispara 4 rajadas de 5 de dano. Total: 20.',damage:20,hits:4},
  beam:{name:'Kamehameha',type:'TÉCNICA',cost:4,actions:2,icon:'波',description:'Causa 50 de dano. Concentra ki e dispara um feixe azul.',damage:50},
+ kienzan:{name:'Kienzan',type:'HABILIDADE',cost:3,actions:2,icon:'◒',description:'Lança um disco de energia. Causa 40 de dano.',damage:40},
  charge:{name:'Concentrar ki',type:'HABILIDADE',cost:0,icon:'気',description:'Recupera 2 de ki. Consome uma ação.',ki:2},
  guard:{name:'Postura defensiva',type:'HABILIDADE',cost:1,icon:'盾',description:'Recebe 18 de escudo até seu próximo turno.',shield:18},
  evade:{name:'Reflexo veloz',type:'REAÇÃO',cost:1,icon:'↯',description:'Prepara uma reação: reduz o próximo ataque em 15.',reaction:15},
  gogeta:{name:'Gogeta Super Sayajin',type:'TRANSFORMAÇÃO',cost:4,actions:1,icon:'融',description:'Transforma em Gogeta SSJ. +8 de dano; 1 ki por turno.',transform:true,form:'gogetaSSJ'},
  transform:{name:'Super Saiyajin',type:'TRANSFORMAÇÃO',cost:4,icon:'炎',description:'+8 de dano nos ataques. Custa 1 de ki por turno.',transform:true}
 };
-const sequence=['superBeam','strike','charge','guard','blast','beam','evade','transform','gogeta','strike','blast','guard','charge','beam','evade','strike'];
+const sequence=['superBeam','strike','charge','guard','blast','beam','kienzan','evade','transform','gogeta','strike','blast','guard','charge','beam','evade','strike'];
 function shuffle(a,rng){for(let i=a.length-1;i>0;i--){let j=Math.floor(rng()*(i+1));[a[i],a[j]]=[a[j],a[i]];}return a;}
 function fighter(name,rng){return {name,hp:100,ki:3,shield:0,reaction:0,transformed:false,form:null,deck:shuffle([...sequence],rng),discard:[],hand:['strike','charge','evade','transform']};}
 export function createGame(rng=Math.random){return {player:fighter('Goku',rng),enemy:fighter('Vegeta',rng),turn:'player',round:1,actions:2,winner:null,log:['Treino no templo! Você começa com 2 ações.']};}
