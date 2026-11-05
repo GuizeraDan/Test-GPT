@@ -84,3 +84,8 @@ Rajada refeita com os arquivos “Rajada.zip” e “Projétil de Fogo Pixelado 
 
 
 Kamehameha na forma base: nova animação de oito poses desenhada a partir das referências do usuário, em `assets/base-kame-atlas.png`. Goku permanece de cabelo preto durante preparação, carga azul, disparo e recuperação. A técnica na forma base não apresenta transformação temporária. Mantidos 4 ki, 2 ações e 50 de dano base. A carta usa uma pose nova; o laboratório inclui a sequência completa e as fases separadas. A forma SSJ e o Super Kamehameha preservam suas sequências anteriores.
+
+## Kamehameha base em Aseprite
+A animação atual vem de `assets/Kamehameha.ase`, arquivo original do usuário. Seus seis quadros RGBA de 64 × 64 e os tempos de 100 ms são exportados sem redesenho para `base-kame-ase.png` e `base-kame-ase.json`. O jogo usa os quatro primeiros quadros na carga e os dois últimos no disparo; a pose final é sustentada enquanto o feixe está ativo. A recuperação usa a pose de mãos abertas do mesmo arquivo. A prévia completa reproduz os seis tempos originais. Custo e dano permanecem 4 ki, 2 ações e 50 de dano base.
+
+Para atualizar os exports após editar o arquivo no Aseprite, use Python 3 com Pillow: `python tools/export_aseprite.py assets/Kamehameha.ase assets/base-kame-ase`. Depois execute `python build-standalone.py`. O arquivo ASE original permanece incluído para edição. Os demais personagens, a Rajada e o Super Kamehameha não são alterados por esta troca.

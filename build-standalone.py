@@ -9,8 +9,8 @@ html=html.replace('<link rel="stylesheet" href="/style.css">','<style>'+css+'</s
 html=html.replace('<script type="module" src="/app.js"></script>','<script>'+game+'\n'+app+'</script>')
 html=html.replace('href="/"','href="#"')
 for image in (root/'assets').iterdir():
-    if image.suffix.lower() not in ['.png','.jpg','.jpeg','.webp','.gif']: continue
-    mime={'.png':'image/png','.jpg':'image/jpeg','.jpeg':'image/jpeg','.webp':'image/webp','.gif':'image/gif'}[image.suffix.lower()]
+    if image.suffix.lower() not in ['.png','.jpg','.jpeg','.webp','.gif','.json']: continue
+    mime={'.png':'image/png','.jpg':'image/jpeg','.jpeg':'image/jpeg','.webp':'image/webp','.gif':'image/gif','.json':'application/json'}[image.suffix.lower()]
     html=html.replace('/assets/'+image.name,'data:'+mime+';base64,'+base64.b64encode(image.read_bytes()).decode())
 (root/'Kame-Duel.html').write_text(html)
 (root/'Laboratorio.html').write_text(html.replace('<body>','<body data-mode="lab">').replace('<title>Kame Duel · Batalha de cartas</title>','<title>Kame Duel · Laboratório de animações</title>'))

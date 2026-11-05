@@ -72,15 +72,15 @@ async function executeFourBlasts(side,index,token){
 }
 async function executeKamehameha(index,token,superPower=false){
  const source=$('goku'),dest=$('vegeta'),baseForm=!superPower&&!state.player.transformed;source.classList.toggle('base-kame',baseForm);source.classList.add('kame-preparing');source.classList.toggle('super-kame',superPower);$('lastAction').textContent=superPower?'Goku concentra todo seu ki… Super Kamehameha!':'Goku concentra o ki e libera seu poder…';
- await delay(baseForm?960:1440);if(token!==generation)return;
+ await delay(baseForm?BASE_KAME_FRAMES.slice(0,4).reduce((sum,f)=>sum+f[4],0):1440);if(token!==generation)return;
  source.classList.remove('four-blasts','super-kame','kame-preparing');source.classList.add('kame-firing');$('lastAction').textContent='Kame… hame… HA!';
- await delay(baseForm?80:540);if(token!==generation)return;
+ await delay(baseForm?BASE_KAME_FRAMES[4][4]:540);if(token!==generation)return;
  const beam=gokuAnimator.beam(superPower,baseForm);beam.className='battle-fx energy-beam original-beam'+(superPower?' super-kame-beam':'');document.querySelector('.battle').append(beam);
  await delay(220);if(token!==generation)return;
  const hp=state.enemy.hp;play(state,'player',index);render();if(superPower){dest.classList.add('hit');if(hp===state.enemy.hp)dest.classList.add('blocked');startSuperImpact(dest,token);}else dest.classList.add('hit',hp>state.enemy.hp?'impact':'blocked');
  $('effect').textContent=hp>state.enemy.hp?`−${hp-state.enemy.hp}`:'BLOQUEADO';$('effect').classList.remove('show');void $('effect').offsetWidth;$('effect').classList.add('show');
  await delay(superPower?800:480);if(token!==generation)return;beam.remove();dest.classList.remove('hit','impact','blocked');source.classList.remove('kame-firing');source.classList.add('kame-recovering');
- await delay(baseForm?220:560);if(token!==generation)return;clearBattleFx();busy=false;render();
+ await delay(baseForm?BASE_KAME_FRAMES[4][4]:560);if(token!==generation)return;clearBattleFx();busy=false;render();
  if(state.winner&&!labMode){$('resultTitle').textContent='Você superou seus limites!';$('resultText').textContent=`Treino encerrado em ${state.round} rounds.`;$('resultDialog').showModal();}
 }
 async function executeContactCombo(side,index,token){
@@ -164,20 +164,20 @@ function makeGokuAnimator(){
   if(ready&&fighter.classList.contains('atlas-fighter')){
    const name=current();if(name!==active){active=name;started=t;}
    const base=baseKameSheet&&name.startsWith('baseKame');const native=rajadaSheet&&['kiBurst','rajadaPrepare','rajadaFire'].includes(name);
-   const frames=base?(name==='baseKameCharge'?BASE_KAME_FRAMES.slice(0,5):name==='baseKameFire'?BASE_KAME_FRAMES.slice(5,7):name==='baseKameRecover'?BASE_KAME_FRAMES.slice(7):BASE_KAME_FRAMES):native?(name==='rajadaPrepare'?RAJADA_FRAMES.slice(0,2):name==='rajadaFire'?RAJADA_FRAMES.slice(2):RAJADA_FRAMES):GOKU_CLIPS[name]||GOKU_CLIPS.idle;
+   const frames=base?(name==='baseKameCharge'?BASE_KAME_FRAMES.slice(0,4):name==='baseKameFire'?BASE_KAME_FRAMES.slice(4):name==='baseKameRecover'?BASE_KAME_FRAMES.slice(4,5):BASE_KAME_FRAMES):native?(name==='rajadaPrepare'?RAJADA_FRAMES.slice(0,2):name==='rajadaFire'?RAJADA_FRAMES.slice(2):RAJADA_FRAMES):GOKU_CLIPS[name]||GOKU_CLIPS.idle;
    const duration=frames.reduce((a,f)=>a+f[4],0),loop=!!preview||['burstFire','idle','charge','beamCharge','ssjIdle','ssjCharge'].includes(name);let elapsed=loop?(t-started)%duration:Math.min(t-started,duration-1),frame=frames[0];
    for(const f of frames){frame=f;if(elapsed<f[4])break;elapsed-=f[4];}
    if(name==='rajadaFire'&&!preview)frame=frames[(Number(fighter.dataset.burstPose||0)%2)*2+(fighter.dataset.burstStage==='emit'?1:0)];
    const frameIndex=frames.indexOf(frame);ctx.clearRect(0,0,canvas.width,canvas.height);ctx.imageSmoothingEnabled=false;
-   if(base){const cell=frame[0],w=baseKameSheet.width/4,h=baseKameSheet.height/2,destH=256,destW=destH*w/h;ctx.drawImage(baseKameSheet,(cell%4)*w,Math.floor(cell/4)*h,w,h,canvas.width/2-destW/2,canvas.height-18-destH*.9,destW,destH);}
+   if(base){const rect=baseKameMetadata.frames[frame[0]],destH=224,destW=destH*rect.width/rect.height;ctx.drawImage(baseKameSheet,rect.x,rect.y,rect.width,rect.height,canvas.width/2-destW/2,canvas.height-18-destH,destW,destH);}
    else if(native){const [x,y,w,h,,anchor]=frame,z=256/180;ctx.drawImage(rajadaSheet,x,y,w,h,canvas.width/2-(anchor-x)*z,canvas.height-18-h*z,w*z,h*z);}
    else{const tex=frameTexture(frame),scale=sheet.naturalWidth/731,z=256/48/scale,anchor=(frame[5]===undefined?frame[2]/2:frame[5]-frame[0])*scale;ctx.drawImage(tex,canvas.width/2-anchor*z,canvas.height-18-tex.height*z,tex.width*z,tex.height*z);}
-   const muzzleVisible=native&&(name==='rajadaFire'?frameIndex%2===1:name==='kiBurst'&&[3,5].includes(frameIndex));canvas.dataset.muzzle=muzzleVisible?'native-sheet':'none';canvas.dataset.clip=name;canvas.dataset.frame=String(frameIndex);canvas.dataset.source=base?'base-kame-atlas':native?'rajada-sheet':'goku-sheet';
+   const muzzleVisible=native&&(name==='rajadaFire'?frameIndex%2===1:name==='kiBurst'&&[3,5].includes(frameIndex));canvas.dataset.muzzle=muzzleVisible?'native-sheet':'none';canvas.dataset.clip=name;canvas.dataset.frame=String(frameIndex);canvas.dataset.source=base?'base-kame-ase':native?'rajada-sheet':'goku-sheet';
    const pc=$('animationPreview');if(pc&&$('spriteDialog').open){const context=pc.getContext('2d');context.clearRect(0,0,pc.width,pc.height);context.imageSmoothingEnabled=false;context.drawImage(canvas,0,0);if(muzzleVisible&&burstArt.projectile){const shot=burstArt.projectile,h=42,w=h*shot.width/shot.height;context.drawImage(shot,390,canvas.height-18-21.5*256/48-h/2,w,h);}$('animationFrame').textContent=`Quadro ${frameIndex+1} / ${frames.length}`;}
   }requestAnimationFrame(tick);
  }
 
- sheet.onload=()=>{ready=true;paintCards();fighter.classList.add('original-sprites');$('spriteStatus').textContent='Goku usa os quadros da folha original. Vegeta mantém o atlas anterior.';};sheet.onerror=()=>{$('spriteStatus').textContent='Falha ao carregar a folha de Goku. O visual anterior foi mantido.';};requestAnimationFrame(tick);return {preview(name){preview=name;active='';},clear(){preview=null;active='';},cards:paintCards,blast(){const texture=frameTexture([185,540,31,36,1]),copy=document.createElement('canvas');copy.width=texture.width;copy.height=texture.height;copy.getContext('2d').drawImage(texture,0,0);return copy;},beam(superPower=false,baseForm=false){const texture=frameTexture([303,674,260,91,1]),copy=document.createElement('canvas');const arena=document.querySelector('.battle').getBoundingClientRect(),source=$('goku').getBoundingClientRect(),target=$('vegeta').getBoundingClientRect();const left=source.left-arena.left+source.width/2+(baseForm?56:32),width=Math.max(130,target.left-arena.left+target.width/2+22-left),height=superPower?BEAM_HEIGHT.super:BEAM_HEIGHT.normal;copy.width=Math.round(width*2);copy.height=height*2;copy.style.left=left+'px';copy.style.top=(source.top-arena.top+(baseForm?84:68)-height/2)+'px';copy.style.width=width+'px';copy.style.height=height+'px';const c=copy.getContext('2d');c.imageSmoothingEnabled=false;const cap=texture.width*.28,outCap=Math.min(copy.width*.35,cap/texture.height*copy.height);c.drawImage(texture,0,0,cap,texture.height,0,0,outCap,copy.height);c.drawImage(texture,cap,0,texture.width-2*cap,texture.height,outCap,0,copy.width-2*outCap,copy.height);c.drawImage(texture,texture.width-cap,0,cap,texture.height,copy.width-outCap,0,outCap,copy.height);return copy;},ready:()=>ready};
+ sheet.onload=()=>{ready=true;paintCards();fighter.classList.add('original-sprites');$('spriteStatus').textContent='Goku usa os quadros da folha original. Vegeta mantém o atlas anterior.';};sheet.onerror=()=>{$('spriteStatus').textContent='Falha ao carregar a folha de Goku. O visual anterior foi mantido.';};requestAnimationFrame(tick);return {preview(name){preview=name;active='';},clear(){preview=null;active='';},cards:paintCards,blast(){const texture=frameTexture([185,540,31,36,1]),copy=document.createElement('canvas');copy.width=texture.width;copy.height=texture.height;copy.getContext('2d').drawImage(texture,0,0);return copy;},beam(superPower=false,baseForm=false){const texture=frameTexture([303,674,260,91,1]),copy=document.createElement('canvas');const arena=document.querySelector('.battle').getBoundingClientRect(),source=$('goku').getBoundingClientRect(),target=$('vegeta').getBoundingClientRect();const left=source.left-arena.left+source.width/2+(baseForm?36:32),width=Math.max(130,target.left-arena.left+target.width/2+22-left),height=superPower?BEAM_HEIGHT.super:BEAM_HEIGHT.normal;copy.width=Math.round(width*2);copy.height=height*2;copy.style.left=left+'px';copy.style.top=(source.top-arena.top+(baseForm?93:68)-height/2)+'px';copy.style.width=width+'px';copy.style.height=height+'px';const c=copy.getContext('2d');c.imageSmoothingEnabled=false;const cap=texture.width*.28,outCap=Math.min(copy.width*.35,cap/texture.height*copy.height);c.drawImage(texture,0,0,cap,texture.height,0,0,outCap,copy.height);c.drawImage(texture,cap,0,texture.width-2*cap,texture.height,outCap,0,copy.width-2*outCap,copy.height);c.drawImage(texture,texture.width-cap,0,cap,texture.height,copy.width-outCap,0,outCap,copy.height);return copy;},ready:()=>ready};
 }
 gokuAnimator=makeGokuAnimator();
 
@@ -277,8 +277,14 @@ const rajadaReady=(async()=>{
  c.putImageData(data,0,0);rajadaSheet=sheet;
 })();
 
-// Nova sequência desenhada para o Kamehameha base: 4 colunas × 2 linhas.
-var baseKameSheet,baseKameCardData;
-const BASE_KAME_FRAMES=[[0,0,0,0,120],[1,0,0,0,140],[2,0,0,0,240],[3,0,0,0,300],[4,0,0,0,160],[5,0,0,0,160],[6,0,0,0,620],[7,0,0,0,220]];
-const baseKameReady=(async()=>{const image=new Image();image.src='/assets/base-kame-atlas.png';await image.decode();baseKameSheet=image;const c=document.createElement('canvas');c.width=Math.round(image.width/4);c.height=Math.round(image.height/2);c.getContext('2d').drawImage(image,image.width/4,image.height/2,image.width/4,image.height/2,0,0,c.width,c.height);baseKameCardData=c.toDataURL();paintBaseKameCard();})();
+// Quadros e tempos exportados sem redesenho do arquivo Kamehameha.ase.
+var baseKameSheet,baseKameMetadata,baseKameCardData;
+var BASE_KAME_FRAMES=[];
+const baseKameReady=(async()=>{
+ const image=new Image();image.src='/assets/base-kame-ase.png';
+ const [,metadata]=await Promise.all([image.decode(),fetch('/assets/base-kame-ase.json').then(response=>{if(!response.ok)throw new Error('Falha ao carregar os tempos do Kamehameha');return response.json();})]);
+ if(metadata.frames.length!==6)throw new Error('A sequência configurada precisa de seis quadros');
+ baseKameMetadata=metadata;BASE_KAME_FRAMES=metadata.frames.map((frame,index)=>[index,0,0,0,frame.duration]);baseKameSheet=image;
+ const frame=metadata.frames[5],c=document.createElement('canvas');c.width=frame.width;c.height=frame.height;c.getContext('2d').drawImage(image,frame.x,frame.y,frame.width,frame.height,0,0,frame.width,frame.height);baseKameCardData=c.toDataURL();paintBaseKameCard();
+})();
 function paintBaseKameCard(){const art=document.querySelector('.art-beam .card-sprite');if(art&&baseKameCardData){art.style.backgroundImage='url("'+baseKameCardData+'")';art.style.backgroundSize='contain';art.style.backgroundPosition='center';}}
