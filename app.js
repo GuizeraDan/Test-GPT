@@ -121,7 +121,6 @@ function reset(){generation++;animationClock.cancelWaits();busy=false;clearBattl
 
 function setSprite(id,src){const fighter=$(id);let img=fighter.querySelector('.sprite-img');if(!img){img=document.createElement('img');img.className='sprite-img';img.alt='';fighter.append(img);}img.src=src;fighter.classList.add('has-sprite');fighter.classList.remove('atlas-fighter');}
 $('spriteButton').onclick=()=>$('spriteDialog').showModal();
-for(const id of ['goku','vegeta'])$(id+'Upload').onchange=async e=>{const file=e.target.files[0];if(!file)return;if(!['image/png','image/webp'].includes(file.type)||file.size>8*1024*1024){$('spriteStatus').textContent='Use PNG ou WebP de até 8 MB.';return;}try{const src=await new Promise((resolve,reject)=>{const reader=new FileReader();reader.onload=()=>resolve(reader.result);reader.onerror=reject;reader.readAsDataURL(file);});const probe=new Image();probe.src=src;await probe.decode();setSprite(id,src);$('spriteStatus').textContent='Sprite aplicado! Feche esta janela para testar.';}catch{$('spriteStatus').textContent='Não foi possível abrir essa imagem. Tente outro arquivo.'}};
 $('spriteScale').oninput=e=>{document.querySelectorAll('.fighter').forEach(f=>{f.style.setProperty('--sprite-height',Math.round(Number(e.target.value)*168/110)+'px');f.style.setProperty('--sprite-width',Math.round(Number(e.target.value)*145/110)+'px');});};
 $('restoreSprites').onclick=()=>{document.querySelectorAll('.sprite-img').forEach(i=>i.remove());document.querySelectorAll('.fighter').forEach(f=>{f.classList.remove('has-sprite');f.style.removeProperty('--sprite-height');f.style.removeProperty('--sprite-width');});$('spriteScale').value=110;document.querySelectorAll('#spriteDialog input[type=file]').forEach(i=>i.value='');restoreAtlas();$('spriteStatus').textContent='Visuais restaurados.';};
 
@@ -238,13 +237,14 @@ function startSuperImpact(target,token){
 }
 
 function prepareLabState(){
- const side=$('labActor').value,target=side==='player'?'enemy':'player';state.turn=side;state.actions=2;state.winner=null;state.player.hand=Object.keys(CARDS);state.enemy.hand=Object.keys(CARDS);state.player.ki=8;state.enemy.ki=8;state[side].form=$('labForm').value==='gogetaSSJ'?'gogetaSSJ':$('labForm').value==='ssj'?'ssj':null;state[side].transformed=!!state[side].form;
- if($('labOpponent').value==='saibaman'){state.enemy.name='Saibaman';state.enemy.form=null;state.enemy.transformed=false;}
+ const side=$('labActor').value,target=side==='player'?'enemy':'player';state.turn=side;state.actions=2;state.winner=null;state.player.hand=Object.keys(CARDS);state.enemy.hand=Object.keys(CARDS);state.player.ki=8;state.enemy.ki=8;
+ state.player.name=$('labPlayer').value==='gogeta'?'Gogeta':'Goku';state.player.form=$('labPlayer').value==='gogeta'?'gogetaSSJ':$('labForm').value==='ssj'?'ssj':null;state.player.transformed=!!state.player.form;
+ state.enemy.name=$('labOpponent').value==='saibaman'?'Saibaman':'Vegeta';state.enemy.form=$('labOpponent').value==='vegeta'&&$('labEnemyForm').value==='ssj'?'ssj':null;state.enemy.transformed=!!state.enemy.form;
  const defense=$('labDefense').value;state[target].shield=defense==='shield'?18:0;state[target].reaction=defense==='reaction'?15:0;
 }
 function renderLab(){
- $('round').textContent='LAB';$('handCount').textContent=Object.keys(CARDS).length;$('phase').textContent=busy?'ANIMAÇÃO EM CURSO':'TESTE LIVRE';$('turnTitle').textContent='Todas as cartas. Sem esperar turnos.';$('turnHint').textContent='Clique em uma carta ou use Reproduzir. O alvo é restaurado a cada teste.';$('actions').textContent='TESTE LIVRE';$('deckCount').textContent=`${Object.keys(CARDS).length} CARTAS DISPONÍVEIS`;$('labPlay').disabled=busy;$('labSkill').disabled=busy;$('labActor').disabled=busy;$('labOpponent').disabled=busy;$('labForm').disabled=busy;$('labDefense').disabled=busy;
- if(isSaibamanActor()){$('turnTitle').textContent='Saibaman · animações do inimigo';$('turnHint').textContent='Selecione uma animação no laboratório e clique em Reproduzir.';$('handCount').textContent='0';$('deckCount').textContent='SEM CARTAS · TESTE VISUAL';$('labForm').disabled=true;$('labDefense').disabled=true;document.querySelector('.lab-note').textContent='Selecione a animação do Saibaman acima. Use pausa, avanço por quadro e velocidade para inspecionar.';}else document.querySelector('.lab-note').textContent='Use as cartas abaixo para testar diretamente. Os controles alteram somente a reprodução.';
+ $('round').textContent='LAB';$('handCount').textContent=Object.keys(CARDS).length;$('phase').textContent=busy?'ANIMAÇÃO EM CURSO':'TESTE LIVRE';$('turnTitle').textContent='Todas as cartas. Sem esperar turnos.';$('turnHint').textContent='Clique em uma carta ou use Reproduzir. O alvo é restaurado a cada teste.';$('actions').textContent='TESTE LIVRE';$('deckCount').textContent=`${Object.keys(CARDS).length} CARTAS DISPONÍVEIS`;$('labPlay').disabled=busy;$('labSkill').disabled=busy;$('labEnemySkill').disabled=busy;$('labPlayer').disabled=busy;$('labEnemyForm').disabled=busy||$('labOpponent').value==='saibaman';$('labActor').disabled=busy;$('labOpponent').disabled=busy;$('labForm').disabled=busy||$('labPlayer').value==='gogeta';$('labDefense').disabled=busy;
+ if(isSaibamanActor()){$('turnTitle').textContent='Saibaman · animações do inimigo';$('turnHint').textContent='Selecione uma animação no laboratório e clique em Reproduzir.';$('handCount').textContent='0';$('deckCount').textContent='SEM CARTAS · TESTE VISUAL';$('labDefense').disabled=true;document.querySelector('.lab-note').textContent='Selecione a animação do Saibaman acima. Use pausa, avanço por quadro e velocidade para inspecionar.';}else document.querySelector('.lab-note').textContent='Use as cartas abaixo para testar diretamente. Os controles alteram somente a reprodução.';
  $('labPause').textContent=animationClock.paused?'▶ Continuar':'Ⅱ Pausar';$('labStatus').textContent=animationClock.paused?'Pausado · use avanço para inspecionar':busy?'Reproduzindo…':'Pronto para testar';
 }
 function toggleLab(enabled){
@@ -252,9 +252,9 @@ function toggleLab(enabled){
  try{history.replaceState(null,'',location.href.split('#')[0]+(enabled?'#lab':''));}catch{}if(!enabled)$('labRepeat').checked=false;
  if(enabled)updateLabSkills();reset();$('labToggle').textContent=enabled?'Voltar à partida':'Laboratório de animações';
 }
-async function runLab(key=$('labSkill').value){
+async function runLab(key=currentLabSkill()){
  if(isSaibamanActor())return runSaibamanLab(key);
- if(!labMode||busy)return;animationClock.paused=false;$('labSkill').value=key;generation++;animationClock.cancelWaits();clearBattleFx();state=createGame();prepareLabState();const side=$('labActor').value;
+ if(!labMode||busy)return;animationClock.paused=false;$($('labActor').value==='player'?'labSkill':'labEnemySkill').value=key;generation++;animationClock.cancelWaits();clearBattleFx();state=createGame();prepareLabState();const side=$('labActor').value;
  if(CARDS[key].transform){state[side].transformed=false;state[side].form=null;}const token=generation;const index=state[side].hand.indexOf(key);gokuAnimator?.clear();render();
  try{await execute(side,index);}catch(error){if(token!==generation)return;clearBattleFx();busy=false;render();$('labStatus').textContent='Erro ao reproduzir. Confira o histórico.';console.error(error);return;}
  if(token!==generation||!labMode)return;state.player.hand=Object.keys(CARDS);state.enemy.hand=Object.keys(CARDS);state.player.ki=8;state.enemy.ki=8;state.actions=2;render();
@@ -262,7 +262,7 @@ async function runLab(key=$('labSkill').value){
 }
 $('labSkill').replaceChildren(...Object.entries(CARDS).map(([key,card])=>{const option=document.createElement('option');option.value=key;option.textContent=card.name;return option;}));
 $('labToggle').onclick=()=>toggleLab(!labMode);$('labExit').onclick=()=>toggleLab(false);$('labPlay').onclick=()=>runLab();$('labPause').onclick=()=>{animationClock.paused=!animationClock.paused;renderLab();};$('labStep').onclick=()=>{animationClock.step();renderLab();};$('labReset').onclick=()=>{animationClock.paused=false;reset();};$('labSpeed').onchange=()=>{animationClock.speed=Number($('labSpeed').value);};
-for(const id of ['labActor','labOpponent','labForm','labDefense'])$(id).onchange=()=>{if(id==='labActor'||id==='labOpponent')updateLabSkills();reset();};
+for(const id of ['labActor','labPlayer','labOpponent','labForm','labEnemyForm','labDefense'])$(id).onchange=()=>{if(id==='labPlayer'&&$('labPlayer').value==='gogeta')$('labForm').value='ssj';if(id==='labOpponent'&&$('labOpponent').value==='saibaman')$('labEnemyForm').value='base';if(id==='labOpponent')updateLabSkills();reset();};
 
 
 function spawnKiMuzzle(source,side){
@@ -426,7 +426,8 @@ const SAIBA_CLIPS={
 };
 var saibaArt,saibaFrames,saibaPlayback=null;
 const saibaReady=(async()=>{const im=new Image();im.src='/assets/saibaman-atlas.png';const [,frames]=await Promise.all([im.decode(),fetch('/assets/saibaman-atlas.json').then(r=>{if(!r.ok)throw Error('Falha ao carregar Saibaman');return r.json();})]);saibaArt=im;saibaFrames=frames;})();
-function updateLabSkills(){const entries=isSaibamanActor()?SAIBA_CLIPS:CARDS;$('labSkill').replaceChildren(...Object.entries(entries).map(([key,c])=>{const o=document.createElement('option');o.value=key;o.textContent=c.name;return o;}));}
+function currentLabSkill(){return $($('labActor').value==='player'?'labSkill':'labEnemySkill').value;}
+function updateLabSkills(){for(const [id,entries]of [['labSkill',CARDS],['labEnemySkill',$('labOpponent').value==='saibaman'?SAIBA_CLIPS:CARDS]]){const previous=$(id).value;$(id).replaceChildren(...Object.entries(entries).map(([key,c])=>{const o=document.createElement('option');o.value=key;o.textContent=c.name;return o;}));if(entries[previous])$(id).value=previous;}}
 function drawSaiba(ctx,n,x,y,scale=4.5){const f=saibaFrames[n];ctx.imageSmoothingEnabled=false;ctx.drawImage(saibaArt,f.x,f.y,f.w,f.h,x-f.pivot*scale,y-f.h*scale,f.w*scale,f.h*scale);}
 const saibaCanvas=document.createElement('canvas');saibaCanvas.className='saibaman-frames';saibaCanvas.width=768;saibaCanvas.height=512;$('vegeta').append(saibaCanvas);
 function saibaTick(){
@@ -459,3 +460,57 @@ async function runSaibamanLab(key){
 
 function isSaibamanActor(){return $('labActor').value==='enemy'&&$('labOpponent').value==='saibaman';}
 if(labMode)toggleLab(true);
+
+// Pacote portátil de sprites: manifesto do projeto + alterações locais por identidade.
+var customSprites={},customImages=new Map();
+function spriteKey(character,form,clip){return `${character}/${form}/${clip}`;}
+function spriteDB(){return new Promise((resolve,reject)=>{const r=indexedDB.open('kame-duel-sprites',1);r.onupgradeneeded=()=>r.result.createObjectStore('packages');r.onsuccess=()=>resolve(r.result);r.onerror=()=>reject(r.error);});}
+async function localSprites(write){const db=await spriteDB();try{return await new Promise((resolve,reject)=>{const tx=db.transaction('packages',write?'readwrite':'readonly'),store=tx.objectStore('packages'),r=write?store.put(write,'sprites'):store.get('sprites');tx.oncomplete=()=>resolve(r.result);tx.onerror=()=>reject(tx.error);});}finally{db.close();}}
+async function validateSprites(pack){
+ if(pack?.version!==1||!pack.sprites||typeof pack.sprites!=='object'||Array.isArray(pack.sprites))throw Error('Pacote de sprites inválido.');
+ const out={};if(Object.keys(pack.sprites).length>200)throw Error('Pacote muito grande.');
+ for(const [key,entry]of Object.entries(pack.sprites)){
+  if(!/^(goku|gogeta|vegeta|saibaman)\/(base|ssj)\/[a-zA-Z][a-zA-Z0-9]*$/.test(key)||!/^data:image\/(png|webp);base64,/.test(entry.image||'')||entry.image.length>24000000)throw Error('Sprite ou destino inválido.');
+  const image=new Image();image.src=entry.image;await image.decode();if(!Array.isArray(entry.frames)||!entry.frames.length||entry.frames.length>256)throw Error('Quadros inválidos.');
+  for(const f of entry.frames)if(![f.x,f.y,f.w,f.h,f.duration].every(Number.isFinite)||f.x<0||f.y<0||f.w<1||f.h<1||f.x+f.w>image.width||f.y+f.h>image.height||f.duration<16||f.duration>10000)throw Error('Recorte ou tempo de quadro inválido.');
+  out[key]={image:entry.image,frames:entry.frames,sourceName:String(entry.sourceName||'sprite').slice(0,150)};customImages.set(entry.image,image);
+ }return out;
+}
+const customSpritesReady=(async()=>{try{const response=await fetch('/assets/sprite-overrides.json');if(response.ok)customSprites=await validateSprites(await response.json());}catch(error){$('spriteSaveStatus').textContent='Pacote do projeto não carregado: '+error.message;}try{const saved=await localSprites();if(saved)Object.assign(customSprites,await validateSprites(saved));}catch{}updateSpritePreview();})();
+function editorKey(){return spriteKey($('spriteCharacter').value,$('spriteForm').value,$('spriteClip').value);}
+function editorChoices(characterChanged=true){
+ if(characterChanged){const old=$('spriteCharacter').value,names=$('spriteTarget').value==='player'?{goku:'Goku',gogeta:'Gogeta'}:{vegeta:'Vegeta',saibaman:'Saibaman'};$('spriteCharacter').replaceChildren(...Object.entries(names).map(([value,label])=>new Option(label,value)));if(names[old])$('spriteCharacter').value=old;}
+ const character=$('spriteCharacter').value,form=$('spriteForm').value,forms=character==='gogeta'?{ssj:'Super Saiyajin'}:character==='saibaman'?{base:'Base'}:{base:'Base',ssj:'Super Saiyajin'};$('spriteForm').replaceChildren(...Object.entries(forms).map(([value,label])=>new Option(label,value)));if(forms[form])$('spriteForm').value=form;
+ const clips=character==='saibaman'?SAIBA_CLIPS:{idle:{name:'Postura / Idle'},hurt:{name:'Receber dano'},...CARDS},clip=$('spriteClip').value;$('spriteClip').replaceChildren(...Object.entries(clips).map(([value,c])=>new Option(c.name,value)));if(clips[clip])$('spriteClip').value=clip;updateSpritePreview();
+}
+function updateSpritePreview(){const c=$('customSpritePreview'),ctx=c.getContext('2d');ctx.clearRect(0,0,256,256);const entry=customSprites[editorKey()];$('spriteSaveStatus').textContent=entry?'Sprite salvo: '+entry.sourceName:'Nenhuma substituição salva para esta combinação.';}
+$('spriteTarget').onchange=()=>editorChoices();$('spriteCharacter').onchange=()=>editorChoices(false);$('spriteForm').onchange=updateSpritePreview;$('spriteClip').onchange=updateSpritePreview;editorChoices();
+async function readAseSprite(file){
+ const data=new Uint8Array(await file.arrayBuffer()),v=new DataView(data.buffer),count=v.getUint16(6,true),w=v.getUint16(8,true),h=v.getUint16(10,true);if(v.getUint16(4,true)!==0xA5E0||v.getUint16(12,true)!==32||count<1||count>256||w*h*count>16000000||w*count>32767)throw Error('Use Aseprite RGBA de até 256 quadros e 16 milhões de pixels.');
+ const atlas=document.createElement('canvas');atlas.width=w*count;atlas.height=h;const ctx=atlas.getContext('2d'),layers=[],history=[],frames=[];let pos=128;
+ for(let index=0;index<count;index++){
+  const end=pos+v.getUint32(pos,true);if(end>data.length||v.getUint16(pos+4,true)!==0xf1fa)throw Error('Aseprite inválido.');const chunks=v.getUint32(pos+12,true)||v.getUint16(pos+6,true),duration=v.getUint16(pos+8,true);let offset=pos+16;const cels={};
+  for(let j=0;j<chunks;j++){const size=v.getUint32(offset,true),type=v.getUint16(offset+4,true),b=offset+6;if(size<6||offset+size>end)throw Error('Bloco Aseprite inválido.');
+   if(type===0x2004){if(v.getUint16(b+2,true)!==0||v.getUint16(b+4,true)!==0||v.getUint16(b+10,true)!==0)throw Error('Use camadas simples com mesclagem normal.');layers.push({visible:!!(v.getUint16(b,true)&1),opacity:v.getUint8(b+12)});}
+   if(type===0x2005){const layer=v.getUint16(b,true),x=v.getInt16(b+2,true),y=v.getInt16(b+4,true),opacity=v.getUint8(b+6),kind=v.getUint16(b+7,true);if(v.getInt16(b+9,true)!==0)throw Error('Ordem especial de camadas não suportada.');let image;
+    if(kind===1){image=history[v.getUint16(b+16,true)]?.[layer]?.image;if(!image)throw Error('Quadro vinculado inválido.');}
+    else if(kind===0||kind===2){const cw=v.getUint16(b+16,true),ch=v.getUint16(b+18,true);let bytes=data.slice(b+20,offset+size);if(kind===2)bytes=new Uint8Array(await new Response(new Blob([bytes]).stream().pipeThrough(new DecompressionStream('deflate'))).arrayBuffer());if(bytes.length!==cw*ch*4)throw Error('Pixels inválidos.');image=document.createElement('canvas');image.width=cw;image.height=ch;image.getContext('2d').putImageData(new ImageData(new Uint8ClampedArray(bytes),cw,ch),0,0);}
+    else throw Error('Tilemaps não suportados.');cels[layer]={image,x,y,opacity};
+   }offset+=size;
+  }
+  ctx.save();ctx.beginPath();ctx.rect(index*w,0,w,h);ctx.clip();for(let layer=0;layer<layers.length;layer++){const cel=cels[layer];if(cel&&layers[layer].visible){ctx.globalAlpha=cel.opacity*layers[layer].opacity/65025;ctx.drawImage(cel.image,index*w+cel.x,cel.y);}}ctx.restore();history.push(cels);frames.push({x:index*w,y:0,w,h,duration:Math.max(16,duration)});pos=end;
+ }return {image:atlas.toDataURL(),frames,sourceName:file.name};
+}
+async function readSpriteFile(file){if(file.size>8*1024*1024)throw Error('Use arquivos de até 8 MB.');if(/\.ase(?:prite)?$/i.test(file.name))return readAseSprite(file);if(!['image/png','image/webp'].includes(file.type))throw Error('Use PNG, WebP ou Aseprite.');const image=await new Promise((resolve,reject)=>{const r=new FileReader();r.onload=()=>resolve(r.result);r.onerror=reject;r.readAsDataURL(file);}),im=new Image();im.src=image;await im.decode();const cols=Number($('spriteCols').value),rows=Number($('spriteRows').value),fps=Number($('spriteFps').value);if(![cols,rows].every(n=>Number.isInteger(n)&&n>0)||cols*rows>256||im.width%cols||im.height%rows||fps<1||fps>60)throw Error('Confira colunas, linhas e velocidade.');return {image,frames:Array.from({length:cols*rows},(_,i)=>({x:i%cols*im.width/cols,y:Math.floor(i/cols)*im.height/rows,w:im.width/cols,h:im.height/rows,duration:1000/fps})),sourceName:file.name};}
+async function persistSprites(){try{await localSprites({version:1,sprites:customSprites});return 'Salvo neste navegador. Exporte para guardar no projeto.';}catch{return 'Aplicado nesta sessão. O navegador não permitiu salvar; use Exportar para o projeto.';}}
+$('spriteSave').onclick=async()=>{const button=$('spriteSave');button.disabled=true;try{const file=$('spriteFile').files[0];if(!file)throw Error('Selecione o arquivo da animação.');const key=editorKey(),entry=await readSpriteFile(file);Object.assign(customSprites,await validateSprites({version:1,sprites:{[key]:entry}}));$('spriteSaveStatus').textContent=await persistSprites();}catch(e){$('spriteSaveStatus').textContent=e.message;}finally{button.disabled=false;}};
+$('spriteRemove').onclick=async()=>{delete customSprites[editorKey()];$('spriteSaveStatus').textContent='Animação original restaurada. '+await persistSprites();};
+$('spriteExport').onclick=()=>{const blob=new Blob([JSON.stringify({version:1,sprites:customSprites},null,2)],{type:'application/json'}),url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download='sprite-overrides.json';a.click();setTimeout(()=>URL.revokeObjectURL(url),1000);$('spriteSaveStatus').textContent='Pacote exportado. Inclua-o em assets/sprite-overrides.json para o jogo final.';};
+$('spriteImport').onchange=async e=>{try{const file=e.target.files[0];if(!file)return;if(file.size>32*1024*1024)throw Error('Pacote muito grande.');Object.assign(customSprites,await validateSprites(JSON.parse(await file.text())));$('spriteSaveStatus').textContent=await persistSprites();}catch(error){$('spriteSaveStatus').textContent=error.message;}};
+function customIdentity(side){const f=state[side],character=f.form==='gogetaSSJ'?'gogeta':f.name.toLowerCase(),form=f.transformed?'ssj':'base';return {character,form};}
+for(const [side,id]of [['player','goku'],['enemy','vegeta']]){
+ const actor=$(id),canvas=document.createElement('canvas');canvas.width=384;canvas.height=336;canvas.className='custom-frames';canvas.setAttribute('aria-hidden','true');actor.append(canvas);let previous='',started=0;
+ function tick(){const {character,form}=customIdentity(side);let clip=actor.classList.contains('hit')?'hurt':'idle';if(busy&&state.turn===side)clip=side==='enemy'&&isSaibamanActor()&&saibaPlayback?.token===generation?saibaPlayback.key:actor.dataset.move||'idle';const key=spriteKey(character,form,clip),entry=customSprites[key];actor.classList.toggle('custom-animation',!!entry);if(entry){if(previous!==key){previous=key;started=animationClock.time;}const times=entry.frames.reduce((n,f)=>n+f.duration,0);let time=(animationClock.time-started)%times;if(clip==='kienzan')time=Math.min(times-1,animationClock.time-Number(actor.dataset.kienzanStart||started));let index=0;while(index<entry.frames.length-1&&time>=entry.frames[index].duration){time-=entry.frames[index].duration;index++;}const f=entry.frames[index],ctx=canvas.getContext('2d'),height=224,width=height*f.w/f.h;ctx.clearRect(0,0,384,336);ctx.imageSmoothingEnabled=false;ctx.save();if(side==='enemy'){ctx.translate(384,0);ctx.scale(-1,1);}ctx.drawImage(customImages.get(entry.image),f.x,f.y,f.w,f.h,192-width/2,318-height,width,height);ctx.restore();canvas.dataset.key=key;canvas.dataset.frame=String(index);}else previous='';requestAnimationFrame(tick);}
+ requestAnimationFrame(tick);
+}
+function editorTick(){const entry=customSprites[editorKey()];if(entry&&$('spriteDialog').open){const duration=entry.frames.reduce((n,f)=>n+f.duration,0);let time=animationClock.time%duration,index=0;while(index<entry.frames.length-1&&time>=entry.frames[index].duration){time-=entry.frames[index].duration;index++;}const f=entry.frames[index],ctx=$('customSpritePreview').getContext('2d');ctx.clearRect(0,0,256,256);ctx.imageSmoothingEnabled=false;const scale=Math.min(224/f.w,224/f.h);ctx.drawImage(customImages.get(entry.image),f.x,f.y,f.w,f.h,128-f.w*scale/2,240-f.h*scale,f.w*scale,f.h*scale);}requestAnimationFrame(editorTick);}requestAnimationFrame(editorTick);
