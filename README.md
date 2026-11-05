@@ -85,3 +85,5 @@ A Rajada usa poses do Goku sem o clarão embutido da folha. O projétil é desen
 A arte do projétil da Rajada foi substituída pelo PNG enviado em “Captura de tela 2026-11-05 095525.zip”. O fundo vermelho é removido ao carregar; a carta usa a mesma imagem. O impacto anterior e as regras de quatro acertos de 5 de dano permanecem.
 
 Emissão da Rajada: a arte substituta aparece na palma durante 100 ms antes de cada um dos quatro projéteis. As poses da prévia individual também removem o clarão antigo embutido e compõem a nova arte na emissão. O projétil sai da mesma região da mão; não há dano adicional na emissão.
+
+A emissão e o projétil são artes separadas: `ki-muzzle-original.png` é o clarão branco da palma (fundo vermelho removido em runtime), e `ki-projectile-original.png` é a rajada amarela que viaja. Há uma breve sobreposição dos dois no começo do voo; o clarão permanece na mão e não acompanha o projétil. A prévia individual mostra essa composição.

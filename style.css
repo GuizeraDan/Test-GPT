@@ -64,3 +64,5 @@ canvas.burst-shot{width:64px;height:58px;object-fit:contain;filter:none}canvas.b
 canvas.burst-shot{width:38px;height:32px;object-fit:contain;filter:drop-shadow(0 0 2px #ffd84f80)}
 
 .ki-muzzle{width:34px;height:58px;object-fit:contain;translate:-50% -50%;image-rendering:pixelated;pointer-events:none;z-index:8}.ki-muzzle.reverse{transform:scaleX(-1)}
+
+#animationPreview{width:min(100%,300px);height:auto;aspect-ratio:352 / 336}
