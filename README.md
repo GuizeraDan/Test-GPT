@@ -2,7 +2,7 @@
 Protótipo de batalha de cartas por turnos para navegador, em português. Sem dependências externas de execução.
 
 ## Baixar pelo GitHub
-No repositório, clique em **Code → Download ZIP**, extraia o arquivo e abra `Kame-Duel.html` no navegador. O HTML não precisa de servidor nem de instalação. Não abra o arquivo dentro do ZIP: extraia a pasta primeiro.
+No repositório, clique em **Code → Download ZIP**, extraia o arquivo e abra `Laboratorio.html` para testar animações, ou `Kame-Duel.html` para jogar a partida. O HTML não precisa de servidor nem de instalação. Não abra o arquivo dentro do ZIP: extraia a pasta primeiro.
 
 ## Jogar sem instalar nada
 Abra `Kame-Duel.html` no Chrome, Firefox ou Edge. Ele contém o jogo e as imagens incorporadas. Para ver seu código, abra o HTML em um editor de texto, como VS Code.
@@ -72,3 +72,10 @@ A área de desenho de Goku tem espaço vertical adicional para os quadros altos 
 Rajada de Ki: quatro projéteis e quatro impactos de 5 de dano (20 total), com vida e defesas atualizadas por acerto. A reação é consumida no primeiro impacto; o escudo absorve o dano restante até acabar. O bônus SSJ de +8 é distribuído entre os quatro disparos (+2 cada). O projétil e o impacto usam os PNGs originais enviados no ZIP. O fundo roxo é removido durante a renderização; os originais ficam intactos em assets. São imagens estáticas animadas pelo jogo, sem quadros adicionais inventados.
 
 Super Kamehameha: o impacto reproduz os 10 quadros (5 colunas × 2 linhas) de `assets/super-impact-original.png`, folha fornecida pelo usuário. O efeito começa quando o feixe atinge o alvo e termina na fumaça. O dano é aplicado uma única vez. O arquivo original permanece intacto; o resíduo de alfa muito baixo é removido na renderização para evitar uma caixa escura sobre a arena. Reiniciar cancela o efeito.
+
+## Laboratório de animações
+Abra `Laboratorio.html` para testar todas as oito cartas sem esperar turnos nem acumular ki. Também pode usar o botão “Laboratório de animações” no jogo. A versão web usa `/laboratorio.html` ou `/#lab`.
+
+Selecione habilidade, personagem, forma inicial e defesa do alvo. Clique em Reproduzir ou em uma carta. O alvo e os recursos são restaurados antes de cada teste. Há velocidades de 0,25× a 2×, pausa/continuação, avanço de 1/60 de segundo da simulação, repetição automática e limpeza do teste. Os controles sincronizam temporizadores, sprites, explosões e animações do navegador. A partida normal conserva suas regras. Vegeta ainda usa o atlas provisório.
+
+“Testar sprites” abre a prévia das sequências individuais do Goku. Para interromper e recomeçar a habilidade inteira, use “Limpar teste”. O laboratório é para inspeção visual e não salva alterações nas cartas ou no código.

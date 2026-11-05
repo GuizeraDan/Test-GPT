@@ -11,4 +11,5 @@ html=html.replace('href="/"','href="#"')
 for image in (root/'assets').glob('*.png'):
     html=html.replace('/assets/'+image.name,'data:image/png;base64,'+base64.b64encode(image.read_bytes()).decode())
 (root/'Kame-Duel.html').write_text(html)
-print('HTML independente atualizado')
+(root/'Laboratorio.html').write_text(html.replace('<body>','<body data-mode="lab">').replace('<title>Kame Duel · Batalha de cartas</title>','<title>Kame Duel · Laboratório de animações</title>'))
+print('Jogo e laboratório independentes atualizados')
