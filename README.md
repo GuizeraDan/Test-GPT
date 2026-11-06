@@ -148,3 +148,17 @@ Em **Testar sprites → Sprites por personagem e forma**, escolha destino, perso
 **Salvar e aplicar** registra a substituição no IndexedDB do navegador, por personagem/forma/ação. Ela reaparece ao recarregar a mesma origem. **Restaurar esta animação** remove a associação selecionada. O pacote é visual: regras, custos e duração das habilidades continuam definidos no código.
 
 **Exportar para o projeto** baixa `sprite-overrides.json`, contendo atlas e tempos, sem depender dos arquivos de upload. **Importar pacote salvo** recupera esse trabalho em outro navegador. Para incorporar definitivamente: substitua `assets/sprite-overrides.json` pelo pacote exportado e execute `python build-standalone.py`. O servidor, o jogo independente e o laboratório carregam esse manifesto. O navegador não faz commits nem publica alterações sozinho.
+
+### Kame Animation Studio
+
+Abra **Laboratório → Editor de animações**. O estúdio carrega a seleção atual (personagem, forma e ação). A interface usa como referência os recursos descritos no [LibreSprite](https://github.com/LibreSprite/LibreSprite#introduction): prévia em tempo real, quadros e onion skin. O código do editor foi implementado neste projeto.
+
+Fluxo: carregue uma animação existente ou crie uma sequência vazia; importe PNG/WebP individuais, folhas em grade ou Aseprite; adicione os quadros da biblioteca; arraste para ordenar; duplique/exclua e use desfazer/refazer. Ajuste duração individual ou FPS coletivo, pivô, deslocamento e escala. O canvas permite arrastar a posição ou clicar para definir o pivô. Há grade, zoom, pele de cebola e modos uma vez, repetir e ida e volta. A caixa visual e os marcadores de impacto/disparo são referências visuais, não um sistema de colisão.
+
+A prévia na arena e **Aplicar e testar na batalha** usam a sequência editada. As animações salvas pelo Studio usam seus tempos e pivôs no jogo; as regras das cartas continuam no motor de turnos. Em ataques, a sequência é executada uma vez (ida e volta quando escolhida), e o dano da carta é resolvido ao término.
+
+- **Salvar e aplicar:** aplica à combinação personagem/forma/ação e grava neste navegador. Com `npm start` acessado por localhost, também salva `assets/sprite-overrides.json` e regenera os HTMLs automaticamente.
+- **Baixar jogo pronto:** baixa um HTML independente com todas as animações aplicadas embutidas, inclusive quando usado no GitHub Pages. Cada HTML exportado tem sua própria área de salvamento local, começando com o pacote embutido; não herda substituições de outros jogos abertos no navegador.
+- **Exportar pacote de animações:** gera o manifesto portátil já suportado pelo projeto.
+
+O GitHub Pages não oferece escrita em arquivos do servidor: nele, a implantação portátil acontece pelo botão **Baixar jogo pronto**. Publicação no repositório continua sendo uma etapa separada. O endpoint de gravação do servidor aceita apenas acesso local, JSON e origem correspondente; não executa comandos fornecidos pelo cliente. Os sprites originais não são sobrescritos.
