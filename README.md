@@ -141,7 +141,7 @@ O canvas espelha a arte uma única vez para enfrentar o jogador à esquerda. O e
 
 ### Seletores independentes e biblioteca de sprites
 
-O laboratório tem painéis separados para o personagem jogável e o inimigo, cada um com personagem, forma inicial e habilidade/animação. O campo “Reproduzir animação de” escolhe qual lado age. Goku e Gogeta estão disponíveis como jogáveis; Vegeta e Saibaman como inimigos. As formas disponíveis seguem os sprites existentes.
+O laboratório tem painéis separados para o personagem jogável e o inimigo, cada um com personagem, forma inicial e habilidade/animação. O campo “Reproduzir animação de” escolhe qual lado age. Goku e Gogeta estão disponíveis como jogáveis; Vegeta, Saibaman e Cell Perfeito como inimigos. As formas disponíveis seguem os sprites existentes.
 
 Em **Testar sprites → Sprites por personagem e forma**, escolha destino, personagem, forma e ação. Importe PNG/WebP transparente (uma pose ou grade com colunas/linhas/FPS) ou Aseprite RGBA com camadas simples e mesclagem normal. Arquivos Aseprite preservam quadros, posições e tempos. A arte deve olhar para a direita; o inimigo é espelhado automaticamente.
 
@@ -162,3 +162,31 @@ A prévia na arena e **Aplicar e testar na batalha** usam a sequência editada. 
 - **Exportar pacote de animações:** gera o manifesto portátil já suportado pelo projeto.
 
 O GitHub Pages não oferece escrita em arquivos do servidor: nele, a implantação portátil acontece pelo botão **Baixar jogo pronto**. Publicação no repositório continua sendo uma etapa separada. O endpoint de gravação do servidor aceita apenas acesso local, JSON e origem correspondente; não executa comandos fornecidos pelo cliente. Os sprites originais não são sobrescritos.
+
+
+### Cell Perfeito · laboratório
+
+Escolha **Inimigo → Cell Perfeito**, **Reproduzir animação de → Inimigo** e a habilidade desejada. Há 23 sequências, incluindo **Makankosappo** com preparação, disparo espiralado e explosão no alvo. Pausa, avanço por quadro, velocidade, repetição e limpar teste usam o mesmo relógio. Os ataques são testes visuais, sem cartas, custos ou dano novos. O Cell também pode receber ataques do personagem jogável.
+
+Os arquivos enviados permanecem em `assets/cell-original/`. `python tools/export_cell.py` lê os PNGs e os projetos Pixelorama (.pxo), compõe os cels RGBA nas posições originais e gera `cell-atlas.png/json`. O atlas reduz os PNGs HD para 25% com nearest-neighbor e remove apenas margens transparentes. A explosão mantém a resolução original. Os pivôs das poses são alinhados aos pés; o inimigo é espelhado uma vez, para olhar à esquerda.
+
+O Makankosappo preserva os **9 quadros de 250 ms** do projeto de preparação/disparo e os **3 quadros de 250 ms** do projeto de explosão. O último quadro dispara o raio; ele alcança o alvo em 250 ms e a explosão toca durante 750 ms. O último quadro do Cell permanece enquanto o efeito termina. O raio vem do `142.png` enviado no ZIP de projétil.
+
+As demais sequências são interpretações visuais iniciais, ajustáveis em `CELL_CLIPS`, no `app.js`:
+
+| Sequência | PNGs de origem |
+|---|---|
+| Postura e passos | 002–006 |
+| Avanço, esquiva e salto | 011–027 |
+| Socos, chutes e golpes aéreos | 031–061 |
+| Reação a dano e queda | 062–067 |
+| Disparo de ki e seus efeitos | 068–074 |
+| Carga de ki e barreira | 076–087 |
+| Kienzan duplo e discos | 106–115 |
+| Explosão no chão | 118–124 |
+| Regeneração / energia | 125–135 |
+| Makankosappo | Cell Makankosappo.pxo, Explosão Makankosappo.pxo, projétil 142 |
+| Kamehameha | 143–153 |
+| Provocação e recuo | 154–163 |
+
+Retratos, poses de costas, Cell Jr. e variantes extras estão preservados, mas não misturados à postura de combate do Cell Perfeito. **Testar sprites** e **Editor de animações** incluem o destino `cell/base/ação`; o Studio abre os quadros de cada sequência. Em Makankosappo, o marcador “Disparo” controla quando o raio sai após uma edição. Salvar e exportar usa o mesmo fluxo dos outros personagens.
