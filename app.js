@@ -17,7 +17,7 @@ var burstArt={};
 let state=createGame(),generation=0,busy=false;const $=id=>document.getElementById(id);const types={'TÉCNICA':'technique','HABILIDADE':'ability','REAÇÃO':'reaction','TRANSFORMAÇÃO':'transformation'};
 function hud(f,enemy){return `<div class="fighter-hud ${enemy?'enemy':''}"><div class="hud-name">${f.form==='gogetaSSJ'?'GOGETA':f.name.toUpperCase()}<small>${enemy?'OPONENTE · CPU':'VOCÊ · JOGADOR 01'}</small></div><div class="hp-label"><span>VIDA</span><b>${f.hp} <span>/ 100</span></b></div><div class="hp-track" role="progressbar" aria-label="Vida de ${f.name}" aria-valuenow="${f.hp}" aria-valuemin="0" aria-valuemax="100"><div class="hp-fill" style="width:${f.hp}%"></div></div><div class="ki-row"><span>KI</span>${Array.from({length:8},(_,i)=>`<i class="ki-cell ${i<f.ki?'filled':''}"></i>`).join('')}<b>${f.ki}/8</b></div><div class="status">${[f.shield?`◈ Escudo ${f.shield}`:'',f.reaction?'↯ Reação preparada':'',f.form==='gogetaSSJ'?'✦ Gogeta Super Sayajin':f.transformed?'✦ Super Saiyajin':''].filter(Boolean).join(' · ')||'Forma base · Pronto para o combate'}</div></div>`;}
 function render(){ $('playerHud').innerHTML=hud(state.player,false);$('enemyHud').innerHTML=hud(state.enemy,true);$('round').textContent=`ROUND ${String(state.round).padStart(2,'0')}`;$('phase').textContent=state.winner?'FIM DO TREINO':state.turn==='player'?'SEU TURNO':'TURNO DA CPU';$('turnTitle').textContent=state.winner?'Treino concluído.':state.turn==='player'?'Sua vez de brilhar.':'Vegeta está planejando…';$('turnHint').textContent=state.turn==='player'?(state.actions?'Combine suas cartas. Encontre uma abertura.':'Suas ações acabaram. Encerre o turno para continuar.'):'Observe as técnicas do adversário e prepare sua resposta.';$('actions').innerHTML=`<b>${state.actions} / 2</b> AÇÕES`;$('endTurn').disabled=busy||state.turn!=='player'||!!state.winner;$('handCount').textContent=state.player.hand.length;$('deckCount').textContent=`▱ ${state.player.deck.length} NO BARALHO · ${state.player.discard.length} DESCARTE`;$('lastAction').textContent=state.log.at(-1);
-$('hand').replaceChildren();(labMode&&isVisualEnemyActor()?[]:labMode?Object.keys(CARDS):state.player.hand).forEach((key,i)=>{const c=CARDS[key],button=document.createElement('button');button.className=`card ${types[c.type]}`;button.disabled=busy||(!labMode&&!canPlay(state,'player',i));button.setAttribute('aria-label',`${c.name}, ${c.cost} ki, ${c.actions||1} ações. ${c.description}`);button.innerHTML=`<div class="card-top"><span>${c.type}</span><b class="cost">${c.cost}</b></div><div class="card-art art-${key}"><span class="card-sprite"></span><span>${c.icon}</span></div><h3>${c.name}</h3><p>${c.description}</p><div class="card-stats"><span>${c.cost} KI</span><span>${c.actions||1} ${(c.actions||1)===1?'AÇÃO':'AÇÕES'}</span>${c.damage?`<span>${c.damage} DANO</span>`:''}</div><span class="card-foot">${labMode?(busy?'REPRODUZINDO':'TESTAR ANIMAÇÃO'):c.transform&&(c.form==='gogetaSSJ'?state.player.form==='gogetaSSJ':state.player.transformed)?'JÁ TRANSFORMADO':c.reaction&&state.player.reaction?'REAÇÃO JÁ PREPARADA':state.player.ki<c.cost?'KI INSUFICIENTE':state.actions<(c.actions||1)?'AÇÕES INSUFICIENTES':(c.actions===2?'02 AÇÕES · ':'01 AÇÃO · ')+(c.damage?'OFENSIVA':c.reaction?'PREPARAR':'SUPORTE')}</span>`;button.onclick=()=>labMode?runLab(key):execute('player',i);$('hand').append(button);});if(!state.player.hand.length)$('hand').innerHTML='<p class="empty">Sem cartas na mão. Encerre o turno para comprar mais.</p>';for(const [side,id]of [['player','goku'],['enemy','vegeta']]){ $(id).classList.toggle('transformed',state[side].transformed);$(id).querySelector('.fighter-name').innerHTML=`${state[side].form==='gogetaSSJ'?'GOGETA':state[side].name.toUpperCase()} <span>${side==='player'?'VOCÊ':'CPU'}</span>`;$(id).classList.toggle('shielded',state[side].shield>0);$(id).classList.toggle('reaction-ready',state[side].reaction>0); };$('logList').replaceChildren(...state.log.map(t=>{const li=document.createElement('li');li.textContent=t;return li;}));if(gokuAnimator)gokuAnimator.cards();paintGogetaCard();paintKienzanCard();if(burstArt.projectile)paintBurstCard();if(baseKameCardData)paintBaseKameCard();if(labMode)renderLab();}
+$('hand').replaceChildren();(labMode&&(isVisualEnemyActor()||isAangActor())?[]:labMode?Object.keys(CARDS):state.player.hand).forEach((key,i)=>{const c=CARDS[key],button=document.createElement('button');button.className=`card ${types[c.type]}`;button.disabled=busy||(!labMode&&!canPlay(state,'player',i));button.setAttribute('aria-label',`${c.name}, ${c.cost} ki, ${c.actions||1} ações. ${c.description}`);button.innerHTML=`<div class="card-top"><span>${c.type}</span><b class="cost">${c.cost}</b></div><div class="card-art art-${key}"><span class="card-sprite"></span><span>${c.icon}</span></div><h3>${c.name}</h3><p>${c.description}</p><div class="card-stats"><span>${c.cost} KI</span><span>${c.actions||1} ${(c.actions||1)===1?'AÇÃO':'AÇÕES'}</span>${c.damage?`<span>${c.damage} DANO</span>`:''}</div><span class="card-foot">${labMode?(busy?'REPRODUZINDO':'TESTAR ANIMAÇÃO'):c.transform&&(c.form==='gogetaSSJ'?state.player.form==='gogetaSSJ':state.player.transformed)?'JÁ TRANSFORMADO':c.reaction&&state.player.reaction?'REAÇÃO JÁ PREPARADA':state.player.ki<c.cost?'KI INSUFICIENTE':state.actions<(c.actions||1)?'AÇÕES INSUFICIENTES':(c.actions===2?'02 AÇÕES · ':'01 AÇÃO · ')+(c.damage?'OFENSIVA':c.reaction?'PREPARAR':'SUPORTE')}</span>`;button.onclick=()=>labMode?runLab(key):execute('player',i);$('hand').append(button);});if(!state.player.hand.length)$('hand').innerHTML='<p class="empty">Sem cartas na mão. Encerre o turno para comprar mais.</p>';for(const [side,id]of [['player','goku'],['enemy','vegeta']]){ $(id).classList.toggle('transformed',state[side].transformed);$(id).querySelector('.fighter-name').innerHTML=`${state[side].form==='gogetaSSJ'?'GOGETA':state[side].name.toUpperCase()} <span>${side==='player'?'VOCÊ':'CPU'}</span>`;$(id).classList.toggle('shielded',state[side].shield>0);$(id).classList.toggle('reaction-ready',state[side].reaction>0); };$('logList').replaceChildren(...state.log.map(t=>{const li=document.createElement('li');li.textContent=t;return li;}));if(gokuAnimator)gokuAnimator.cards();paintGogetaCard();paintKienzanCard();if(burstArt.projectile)paintBurstCard();if(baseKameCardData)paintBaseKameCard();if(labMode){renderLab();renderAangCards();}}
 async function execute(side,i){
  if(busy||!canPlay(state,side,i))return;
  const token=generation,key=state[side].hand[i],c=CARDS[key],target=side==='player'?'enemy':'player';
@@ -239,13 +239,14 @@ function startSuperImpact(target,token){
 
 function prepareLabState(){
  const side=$('labActor').value,target=side==='player'?'enemy':'player';state.turn=side;state.actions=2;state.winner=null;state.player.hand=Object.keys(CARDS);state.enemy.hand=Object.keys(CARDS);state.player.ki=8;state.enemy.ki=8;
- state.player.name=$('labPlayer').value==='gogeta'?'Gogeta':'Goku';state.player.form=$('labPlayer').value==='gogeta'?'gogetaSSJ':$('labForm').value==='ssj'?'ssj':null;state.player.transformed=!!state.player.form;
+ state.player.name=({goku:'Goku',gogeta:'Gogeta',aang:'Aang'})[$('labPlayer').value];state.player.form=$('labPlayer').value==='aang'?null:$('labPlayer').value==='gogeta'?'gogetaSSJ':$('labForm').value==='ssj'?'ssj':null;state.player.transformed=!!state.player.form;
  state.enemy.name=({saibaman:'Saibaman',cell:'Cell Perfeito',vegeta:'Vegeta'})[$('labOpponent').value];state.enemy.form=$('labOpponent').value==='vegeta'&&$('labEnemyForm').value==='ssj'?'ssj':null;state.enemy.transformed=!!state.enemy.form;
  const defense=$('labDefense').value;state[target].shield=defense==='shield'?18:0;state[target].reaction=defense==='reaction'?15:0;
 }
 function renderLab(){
- $('round').textContent='LAB';$('handCount').textContent=Object.keys(CARDS).length;$('phase').textContent=busy?'ANIMAÇÃO EM CURSO':'TESTE LIVRE';$('turnTitle').textContent='Todas as cartas. Sem esperar turnos.';$('turnHint').textContent='Clique em uma carta ou use Reproduzir. O alvo é restaurado a cada teste.';$('actions').textContent='TESTE LIVRE';$('deckCount').textContent=`${Object.keys(CARDS).length} CARTAS DISPONÍVEIS`;$('labPlay').disabled=busy;$('labSkill').disabled=busy;$('labEnemySkill').disabled=busy;$('labPlayer').disabled=busy;$('labEnemyForm').disabled=busy||['saibaman','cell'].includes($('labOpponent').value);$('labActor').disabled=busy;$('labOpponent').disabled=busy;$('labForm').disabled=busy||$('labPlayer').value==='gogeta';$('labDefense').disabled=busy;
+ $('round').textContent='LAB';$('handCount').textContent=Object.keys(CARDS).length;$('phase').textContent=busy?'ANIMAÇÃO EM CURSO':'TESTE LIVRE';$('turnTitle').textContent='Todas as cartas. Sem esperar turnos.';$('turnHint').textContent='Clique em uma carta ou use Reproduzir. O alvo é restaurado a cada teste.';$('actions').textContent='TESTE LIVRE';$('deckCount').textContent=`${Object.keys(CARDS).length} CARTAS DISPONÍVEIS`;$('labPlay').disabled=busy;$('labSkill').disabled=busy;$('labEnemySkill').disabled=busy;$('labPlayer').disabled=busy;$('labEnemyForm').disabled=busy||['saibaman','cell'].includes($('labOpponent').value);$('labActor').disabled=busy;$('labOpponent').disabled=busy;$('labForm').disabled=busy||['gogeta','aang'].includes($('labPlayer').value);$('labDefense').disabled=busy;
  if(isVisualEnemyActor()){$('turnTitle').textContent=state.enemy.name+' · animações do inimigo';$('turnHint').textContent='Selecione uma animação no laboratório e clique em Reproduzir.';$('handCount').textContent='0';$('deckCount').textContent='SEM CARTAS · TESTE VISUAL';$('labDefense').disabled=true;document.querySelector('.lab-note').textContent='Selecione a animação do inimigo acima. Use pausa, avanço por quadro e velocidade para inspecionar.';}else document.querySelector('.lab-note').textContent='Use as cartas abaixo para testar diretamente. Os controles alteram somente a reprodução.';
+ if(isAangActor()){$('turnTitle').textContent='Aang · personagem jogável em teste';$('turnHint').textContent='Escolha uma técnica abaixo ou uma animação no seletor.';$('handCount').textContent='TESTES';$('deckCount').textContent='ANIMAÇÕES DO AANG';$('labDefense').disabled=true;document.querySelector('.lab-note').textContent='Teste visual: gestos, projéteis e impactos. Custos e dano serão definidos depois.';}
  $('labPause').textContent=animationClock.paused?'▶ Continuar':'Ⅱ Pausar';$('labStatus').textContent=animationClock.paused?'Pausado · use avanço para inspecionar':busy?'Reproduzindo…':'Pronto para testar';
 }
 function toggleLab(enabled){
@@ -254,6 +255,7 @@ function toggleLab(enabled){
  if(enabled)updateLabSkills();reset();$('labToggle').textContent=enabled?'Voltar à partida':'Laboratório de animações';
 }
 async function runLab(key=currentLabSkill()){
+ if(isAangActor())return runAangLab(key);
  if($('labActor').value==='enemy'&&$('labOpponent').value==='cell')return runCellLab(key);
  if(isSaibamanActor())return runSaibamanLab(key);
  if(!labMode||busy)return;animationClock.paused=false;$($('labActor').value==='player'?'labSkill':'labEnemySkill').value=key;generation++;animationClock.cancelWaits();clearBattleFx();state=createGame();prepareLabState();const side=$('labActor').value;
@@ -264,7 +266,7 @@ async function runLab(key=currentLabSkill()){
 }
 $('labSkill').replaceChildren(...Object.entries(CARDS).map(([key,card])=>{const option=document.createElement('option');option.value=key;option.textContent=card.name;return option;}));
 $('labToggle').onclick=()=>toggleLab(!labMode);$('labExit').onclick=()=>toggleLab(false);$('labPlay').onclick=()=>runLab();$('labPause').onclick=()=>{animationClock.paused=!animationClock.paused;renderLab();};$('labStep').onclick=()=>{animationClock.step();renderLab();};$('labReset').onclick=()=>{animationClock.paused=false;reset();};$('labSpeed').onchange=()=>{animationClock.speed=Number($('labSpeed').value);};
-for(const id of ['labActor','labPlayer','labOpponent','labForm','labEnemyForm','labDefense'])$(id).onchange=()=>{if(id==='labPlayer'&&$('labPlayer').value==='gogeta')$('labForm').value='ssj';if(id==='labOpponent'&&['saibaman','cell'].includes($('labOpponent').value))$('labEnemyForm').value='base';if(id==='labOpponent')updateLabSkills();reset();};
+for(const id of ['labActor','labPlayer','labOpponent','labForm','labEnemyForm','labDefense'])$(id).onchange=()=>{if(id==='labPlayer'&&$('labPlayer').value==='gogeta')$('labForm').value='ssj';if(id==='labOpponent'&&['saibaman','cell'].includes($('labOpponent').value))$('labEnemyForm').value='base';if(id==='labPlayer'){if($('labPlayer').value==='aang'){$('labForm').value='base';$('labActor').value='player';}updateLabSkills();}if(id==='labOpponent')updateLabSkills();reset();};
 
 
 function spawnKiMuzzle(source,side){
@@ -429,7 +431,7 @@ const SAIBA_CLIPS={
 var saibaArt,saibaFrames,saibaPlayback=null;
 const saibaReady=(async()=>{const im=new Image();im.src='/assets/saibaman-atlas.png';const [,frames]=await Promise.all([im.decode(),fetch('/assets/saibaman-atlas.json').then(r=>{if(!r.ok)throw Error('Falha ao carregar Saibaman');return r.json();})]);saibaArt=im;saibaFrames=frames;})();
 function currentLabSkill(){return $($('labActor').value==='player'?'labSkill':'labEnemySkill').value;}
-function updateLabSkills(){for(const [id,entries]of [['labSkill',CARDS],['labEnemySkill',enemyClips($('labOpponent').value)||CARDS]]){const previous=$(id).value;$(id).replaceChildren(...Object.entries(entries).map(([key,c])=>{const o=document.createElement('option');o.value=key;o.textContent=c.name;return o;}));if(entries[previous])$(id).value=previous;}}
+function updateLabSkills(){for(const [id,entries]of [['labSkill',$('labPlayer').value==='aang'?AANG_CLIPS:CARDS],['labEnemySkill',enemyClips($('labOpponent').value)||CARDS]]){const previous=$(id).value;$(id).replaceChildren(...Object.entries(entries).map(([key,c])=>{const o=document.createElement('option');o.value=key;o.textContent=c.name;return o;}));if(entries[previous])$(id).value=previous;}}
 function drawSaiba(ctx,n,x,y,scale=4.5){const f=saibaFrames[n];ctx.imageSmoothingEnabled=false;ctx.drawImage(saibaArt,f.x,f.y,f.w,f.h,x-f.pivot*scale,y-f.h*scale,f.w*scale,f.h*scale);}
 const saibaCanvas=document.createElement('canvas');saibaCanvas.className='saibaman-frames';saibaCanvas.width=768;saibaCanvas.height=512;$('vegeta').append(saibaCanvas);
 function saibaTick(){
@@ -537,6 +539,106 @@ async function runCellLab(key){
  }catch(error){if(token!==generation)return;cellPlayback=null;clearBattleFx();busy=false;render();$('labStatus').textContent='Não foi possível reproduzir Cell Perfeito.';console.error(error);}
 }
 
+// Aang's playable laboratory roster. These are visual tests, not balanced cards.
+const AANG_CLIPS={
+ idle:{name:'Postura',parts:[{action:0}]},
+ walk:{name:'Caminhar',parts:[{action:20}],move:true},
+ run:{name:'Corrida',parts:[{action:100}],move:true},
+ jump:{name:'Salto e aterrissagem',parts:[{action:40},{action:41,hold:300},{action:44,hold:300},{action:47}],jump:true},
+ guard:{name:'Defesa',parts:[{action:120},{action:130,hold:700},{action:140}]},
+ hurt:{name:'Receber golpe',parts:[{action:5000,hold:220},{action:5005,hold:280}]},
+ fall:{name:'Queda e recuperação',parts:[{action:5050,hold:250},{action:5100},{action:5110,hold:400},{action:5120}]},
+ victory:{name:'Vitória',parts:[{action:180,hold:900}]},
+ charge:{name:'Concentrar energia',parts:[{action:195,hold:1200,events:[{frame:0,kind:'aura',action:7110,size:150}]}]},
+ strike:{name:'Combo de socos',contact:true,parts:[{action:200,events:[{frame:1,kind:'hit'}]},{action:210,events:[{frame:1,kind:'hit'}]},{action:220,hold:180,events:[{frame:0,kind:'hit'}]}]},
+ kick:{name:'Combo de chutes',contact:true,parts:[{action:230,events:[{frame:1,kind:'hit'}]},{action:240,events:[{frame:2,kind:'hit',action:7102}]},{action:250,events:[{frame:2,kind:'hit'}]}]},
+ earth:{name:'Dobra de terra',parts:[{action:260,events:[{frame:4,kind:'ground',action:7115,size:220}]}]},
+ airShot:{name:'Corte de ar',parts:[{action:400,events:[{frame:3,kind:'shot',action:10030,size:120}]}]},
+ airStrike:{name:'Golpes aéreos de ar',jump:true,parts:[{action:600,events:[{frame:2,kind:'shot',action:10030,size:110}]},{action:610,events:[{frame:2,kind:'shot',action:10031,size:130}]}]},
+ airShield:{name:'Escudo de ar',parts:[{action:1001,hold:667},{action:1002,hold:850,events:[{frame:1,kind:'aura',action:10005,size:220}]}]},
+ tornado:{name:'Tornado',parts:[{action:1000,hold:667},{action:1051,events:[{frame:2,kind:'target',action:10000,size:240}]}]},
+ waterIce:{name:'Água e gelo',parts:[{action:1000,hold:667},{action:1101,hold:333,events:[{frame:2,kind:'ground',action:10010,size:220}]},{action:1103,hold:1333,events:[{frame:6,kind:'target',action:10011,size:155},{frame:8,kind:'target',action:10016,size:170}]}]},
+ volcano:{name:'Erupção de fogo',jump:true,parts:[{action:1150,hold:667},{action:1151},{action:1152,events:[{frame:0,kind:'ground',action:10020,size:230}]}]},
+ fireCombo:{name:'Combo de fogo',parts:[{action:1000,hold:667},{action:1201,events:[{frame:1,kind:'shot',action:10026,size:125}]},{action:1202,events:[{frame:2,kind:'shot',action:10026,size:125}]},{action:1203,events:[{frame:1,kind:'shot',action:10027,size:150}]}]},
+ rockWall:{name:'Muro de rocha',parts:[{action:1000,hold:667},{action:270,events:[{frame:1,kind:'shot',action:10025,size:160,delay:250}]}]},
+ avatar:{name:'Estado Avatar',avatar:true,parts:[{action:2000,hold:667},{action:2001,hold:2700,events:[{frame:1,kind:'avatar',action:10006,size:240}]}]}
+};
+var aangArt,aangMetadata,aangPlayback=null;
+const aangSequences=new Map();
+const aangReady=(async()=>{
+ const image=new Image();image.src='/assets/aang-atlas.png';
+ const [,metadata]=await Promise.all([image.decode(),fetch('/assets/aang-atlas.json').then(r=>{if(!r.ok)throw Error('Falha ao carregar Aang');return r.json();})]);
+ aangArt=image;aangMetadata=metadata;if(labMode&&isAangActor())render();
+})();
+function isAangActor(){return $('labActor').value==='player'&&$('labPlayer').value==='aang';}
+function aangFrames(action){return aangMetadata.actions[action].frames.map(f=>({...aangMetadata.sprites[f.sprite],...f}));}
+function aangSequence(key){
+ if(aangSequences.has(key))return aangSequences.get(key);
+ const frames=[],cues=[];
+ for(const part of AANG_CLIPS[key].parts){
+  const batch=aangFrames(part.action).map(f=>({...f,event:'',duration:f.hold?180:f.duration}));
+  if(part.hold){const total=batch.reduce((sum,f)=>sum+f.duration,0);batch.at(-1).duration+=Math.max(0,part.hold-total);}
+  for(const cue of part.events||[]){const f=batch[Math.min(batch.length-1,cue.frame)];f.event=cue.kind==='hit'?'impact':'release';f.aangCue=cues.length;cues.push(cue);}
+  frames.push(...batch);
+ }
+ const result={frames,cues};aangSequences.set(key,result);return result;
+}
+function drawAang(ctx,f,x,y,z){ctx.imageSmoothingEnabled=false;ctx.drawImage(aangArt,f.x,f.y,f.w,f.h,x+((f.offsetX||0)-f.pivotX)*z,y+((f.offsetY||0)-f.pivotY)*z,f.w*z,f.h*z);}
+const aangCanvas=document.createElement('canvas');aangCanvas.className='aang-frames';aangCanvas.width=384;aangCanvas.height=336;$('goku').append(aangCanvas);
+function aangTick(){
+ const visible=labMode&&$('labPlayer').value==='aang'&&!!aangArt;$('goku').classList.toggle('aang-visible',visible);
+ if(visible){const p=aangPlayback?.token===generation?aangPlayback:null,key=p?p.key:$('goku').classList.contains('hit')?'hurt':'idle',frames=aangSequence(key).frames;const index=p?p.index:sampleCustomFrame({frames,mode:'loop'},animationClock.time),ctx=aangCanvas.getContext('2d');ctx.clearRect(0,0,384,336);drawAang(ctx,frames[index]||frames[0],192,318,3.5);aangCanvas.dataset.clip=key;aangCanvas.dataset.frame=String(index);aangCanvas.dataset.facing='right';}
+ requestAnimationFrame(aangTick);
+}requestAnimationFrame(aangTick);
+function renderAangCards(){
+ if(!labMode||!isAangActor())return;
+ $('hand').replaceChildren(...Object.entries(AANG_CLIPS).filter(([key])=>!['idle','walk','run','jump','guard','hurt','fall','victory'].includes(key)).map(([key,c])=>{
+  const button=document.createElement('button');button.className='card ability aang-card';button.disabled=busy;button.setAttribute('aria-label','Testar '+c.name);const label=document.createElement('span');label.className='card-top';label.textContent='AANG · TESTE VISUAL';const canvas=document.createElement('canvas');canvas.width=180;canvas.height=112;canvas.className='aang-card-art';if(aangArt){const f=aangSequence(key).frames.at(-1);drawAang(canvas.getContext('2d'),f,90,105,1.75);}const title=document.createElement('h3');title.textContent=c.name;const note=document.createElement('p');note.textContent=key==='avatar'?'Especial temporário com seis emissões de ar.':'Reproduzir animação e efeitos na arena.';const foot=document.createElement('span');foot.className='card-foot';foot.textContent=busy?'REPRODUZINDO':'TESTAR ANIMAÇÃO';button.append(label,canvas,title,note,foot);button.onclick=()=>{ $('labSkill').value=key;runLab(key);};return button;
+ }));
+}
+// Effects retain their AIR timing and use screen blending for additive sprites.
+function aangEffect(action,from,to,token,{size=180,travel=0,wait=0}={}){
+ const frames=aangFrames(action),duration=frames.reduce((sum,f)=>sum+f.duration,0),life=wait+(travel||duration),canvas=document.createElement('canvas');canvas.width=400;canvas.height=400;canvas.className='battle-fx aang-effect';canvas.style.width=size+'px';canvas.style.height=size+'px';canvas.dataset.action=String(action);if(frames.some(f=>f.additive))canvas.classList.add('additive');document.querySelector('.battle').append(canvas);
+ const left=Math.min(...frames.map(f=>(f.offsetX||0)-f.pivotX)),top=Math.min(...frames.map(f=>(f.offsetY||0)-f.pivotY)),right=Math.max(...frames.map(f=>(f.offsetX||0)-f.pivotX+f.w)),bottom=Math.max(...frames.map(f=>(f.offsetY||0)-f.pivotY+f.h));const z=380/Math.max(right-left,bottom-top),start=animationClock.time;
+ function tick(){if(token!==generation||!canvas.isConnected){canvas.remove();return;}const elapsed=Math.max(0,animationClock.time-start),progress=travel?Math.max(0,Math.min(1,(elapsed-wait)/travel)):0;canvas.style.left=(from.x+(to.x-from.x)*progress-size/2)+'px';canvas.style.top=(from.y+(to.y-from.y)*progress-size/2)+'px';const ctx=canvas.getContext('2d');ctx.clearRect(0,0,400,400);const index=sampleCustomFrame({frames,mode:travel?'loop':'once'},Math.max(0,elapsed-wait));drawAang(ctx,frames[index],200-(left+right)*z/2,200-(top+bottom)*z/2,z);canvas.dataset.frame=String(index);if(elapsed<life)requestAnimationFrame(tick);}
+ tick();return {canvas,duration:life};
+}
+async function aangCue(cue,token){
+ if(token!==generation)return;
+ const stage=document.querySelector('.battle').getBoundingClientRect(),a=$('goku').getBoundingClientRect(),b=$('vegeta').getBoundingClientRect(),target=$('vegeta');
+ const from={x:a.left-stage.left+a.width/2+45,y:a.bottom-stage.top-80},to={x:b.left-stage.left+b.width/2,y:b.bottom-stage.top-80},center={x:a.left-stage.left+a.width/2,y:a.bottom-stage.top-85};
+ const impact=()=>{if(token===generation)cellHit(target,stage);};
+ if(cue.kind==='hit'){impact();if(!cue.action)return;}
+ if(cue.kind==='avatar'){
+  let elapsed=0;const tasks=[];
+  for(const tick of [5,20,40,60,80,100]){await delay(tick*1000/60-elapsed);elapsed=tick*1000/60;if(token!==generation)return;const fx=aangEffect(cue.action,center,center,token,{size:cue.size});tasks.push(delay(fx.duration).then(()=>fx.canvas.remove()));}
+  await Promise.all(tasks);return;
+ }
+ const origin=cue.kind==='shot'?from:cue.kind==='aura'?center:cue.kind==='ground'?{...to,y:b.bottom-stage.top-50}:to;
+ const fx=aangEffect(cue.action,origin,cue.kind==='shot'?to:origin,token,{size:cue.size||150,travel:cue.kind==='shot'?450:0,wait:cue.delay||0});
+ if(['ground','target'].includes(cue.kind)){await delay(Math.min(180,fx.duration/2));if(token!==generation)return;impact();await delay(Math.max(0,fx.duration-Math.min(180,fx.duration/2)));}
+ else await delay(fx.duration);
+ if(token!==generation)return;fx.canvas.remove();if(cue.kind==='shot'){impact();const hit=aangEffect(7010,to,to,token,{size:85});await delay(hit.duration);if(token!==generation)return;hit.canvas.remove();}
+}
+async function runAangLab(key){
+ if(!labMode||busy||!AANG_CLIPS[key])return;
+ animationClock.paused=false;generation++;animationClock.cancelWaits();clearBattleFx();state=createGame();prepareLabState();const token=generation;busy=true;render();
+ try{
+  await aangReady;await customSpritesReady;if(token!==generation)return;
+  const clip=AANG_CLIPS[key],native=aangSequence(key),entry=customSprites['aang/base/'+key],frames=entry?customSequence(entry).map(i=>entry.frames[i]):native.frames,actor=$('goku'),target=$('vegeta'),duration=frames.reduce((n,f)=>n+f.duration,0);let motion;
+  if(clip.contact||clip.move){const a=actor.getBoundingClientRect(),b=target.getBoundingClientRect(),distance=clip.contact?b.left+b.width/2-85-(a.left+a.width/2):100;motion=animateGame(actor,[{translate:'0px 0px'},{translate:distance+'px 0px'}],{duration:240,fill:'forwards',easing:'ease-out'});comboMotions.add(motion);await delay(240);if(token!==generation)return;}
+  if(clip.jump||clip.avatar){motion=animateGame(actor,[{translate:'0px 0px'},{translate:clip.avatar?'0px -35px':'0px -75px',offset:.4},{translate:'0px 0px'}],{duration,fill:'forwards'});comboMotions.add(motion);}
+  actor.dataset.customClip=key;actor.dataset.customStart=String(animationClock.time);aangPlayback={key,index:0,token};const effects=[];let nextCue=0;
+  for(let i=0;i<frames.length;i++){
+   if(token!==generation)return;aangPlayback.index=i;const f=frames[i];
+   if(f.event){const cue=Number.isInteger(f.aangCue)?native.cues[f.aangCue]:native.cues[nextCue++];if(cue)effects.push(aangCue(cue,token));else if(f.event==='impact')cellHit(target,document.querySelector('.battle').getBoundingClientRect());}
+   await delay(f.duration);
+  }
+  await Promise.all(effects);if(token!==generation)return;aangPlayback=null;clearBattleFx();busy=false;render();$('labStatus').textContent='Aang · teste concluído · animações sem custo ou dano';
+  if($('labRepeat').checked){await delay(600);if(token===generation&&labMode&&$('labRepeat').checked)runAangLab(key);}
+ }catch(error){if(token!==generation)return;aangPlayback=null;clearBattleFx();busy=false;render();$('labStatus').textContent='Não foi possível reproduzir Aang.';console.error(error);}
+}
+
 if(labMode)toggleLab(true);
 
 // Pacote portátil de sprites: manifesto do projeto + alterações locais por identidade.
@@ -548,7 +650,7 @@ async function validateSprites(pack){
  if(pack?.version!==1||!pack.sprites||typeof pack.sprites!=='object'||Array.isArray(pack.sprites))throw Error('Pacote de sprites inválido.');
  const out={};if(Object.keys(pack.sprites).length>200)throw Error('Pacote muito grande.');
  for(const [key,entry]of Object.entries(pack.sprites)){
-  if(!/^(goku|gogeta|vegeta|saibaman|cell)\/(base|ssj)\/[a-zA-Z][a-zA-Z0-9]*$/.test(key)||!/^data:image\/(png|webp);base64,/.test(entry.image||'')||entry.image.length>24000000)throw Error('Sprite ou destino inválido.');
+  if(!/^(goku|gogeta|vegeta|saibaman|cell|aang)\/(base|ssj)\/[a-zA-Z][a-zA-Z0-9]*$/.test(key)||!/^data:image\/(png|webp);base64,/.test(entry.image||'')||entry.image.length>24000000)throw Error('Sprite ou destino inválido.');
   const image=new Image();image.src=entry.image;await image.decode();if(!Array.isArray(entry.frames)||!entry.frames.length||entry.frames.length>256)throw Error('Quadros inválidos.');
   for(const f of entry.frames)if(![f.x,f.y,f.w,f.h,f.duration].every(Number.isFinite)||f.x<0||f.y<0||f.w<1||f.h<1||f.x+f.w>image.width||f.y+f.h>image.height||f.duration<16||f.duration>10000)throw Error('Recorte ou tempo de quadro inválido.');
   for(const f of entry.frames){for(const k of ['pivotX','pivotY','offsetX','offsetY'])if(f[k]!==undefined&&(!Number.isFinite(f[k])||Math.abs(f[k])>4096))throw Error('Pivô ou deslocamento inválido.');if(f.event&&!['impact','release'].includes(f.event))throw Error('Marcador inválido.');}
@@ -559,9 +661,9 @@ async function validateSprites(pack){
 const customSpritesReady=(async()=>{try{if(window.__spritePackage)customSprites=await validateSprites(window.__spritePackage);else{const response=await fetch('/assets/sprite-overrides.json');if(response.ok)customSprites=await validateSprites(await response.json());}}catch(error){$('spriteSaveStatus').textContent='Pacote do projeto não carregado: '+error.message;}try{const saved=await localSprites();if(saved)Object.assign(customSprites,await validateSprites(saved));}catch{}updateSpritePreview();})();
 function editorKey(){return spriteKey($('spriteCharacter').value,$('spriteForm').value,$('spriteClip').value);}
 function editorChoices(characterChanged=true){
- if(characterChanged){const old=$('spriteCharacter').value,names=$('spriteTarget').value==='player'?{goku:'Goku',gogeta:'Gogeta'}:{vegeta:'Vegeta',saibaman:'Saibaman',cell:'Cell Perfeito'};$('spriteCharacter').replaceChildren(...Object.entries(names).map(([value,label])=>new Option(label,value)));if(names[old])$('spriteCharacter').value=old;}
- const character=$('spriteCharacter').value,form=$('spriteForm').value,forms=character==='gogeta'?{ssj:'Super Saiyajin'}:enemyClips(character)?{base:'Base'}:{base:'Base',ssj:'Super Saiyajin'};$('spriteForm').replaceChildren(...Object.entries(forms).map(([value,label])=>new Option(label,value)));if(forms[form])$('spriteForm').value=form;
- const clips=enemyClips(character)||{idle:{name:'Postura / Idle'},hurt:{name:'Receber dano'},...CARDS},clip=$('spriteClip').value;$('spriteClip').replaceChildren(...Object.entries(clips).map(([value,c])=>new Option(c.name,value)));if(clips[clip])$('spriteClip').value=clip;updateSpritePreview();
+ if(characterChanged){const old=$('spriteCharacter').value,names=$('spriteTarget').value==='player'?{goku:'Goku',gogeta:'Gogeta',aang:'Aang'}:{vegeta:'Vegeta',saibaman:'Saibaman',cell:'Cell Perfeito'};$('spriteCharacter').replaceChildren(...Object.entries(names).map(([value,label])=>new Option(label,value)));if(names[old])$('spriteCharacter').value=old;}
+ const character=$('spriteCharacter').value,form=$('spriteForm').value,forms=character==='gogeta'?{ssj:'Super Saiyajin'}:(character==='aang'||enemyClips(character))?{base:'Base'}:{base:'Base',ssj:'Super Saiyajin'};$('spriteForm').replaceChildren(...Object.entries(forms).map(([value,label])=>new Option(label,value)));if(forms[form])$('spriteForm').value=form;
+ const clips=(character==='aang'?AANG_CLIPS:enemyClips(character))||{idle:{name:'Postura / Idle'},hurt:{name:'Receber dano'},...CARDS},clip=$('spriteClip').value;$('spriteClip').replaceChildren(...Object.entries(clips).map(([value,c])=>new Option(c.name,value)));if(clips[clip])$('spriteClip').value=clip;updateSpritePreview();
 }
 function updateSpritePreview(){const c=$('customSpritePreview'),ctx=c.getContext('2d');ctx.clearRect(0,0,256,256);const entry=customSprites[editorKey()];$('spriteSaveStatus').textContent=entry?'Sprite salvo: '+entry.sourceName:'Nenhuma substituição salva para esta combinação.';}
 $('spriteTarget').onchange=()=>editorChoices();$('spriteCharacter').onchange=()=>editorChoices(false);$('spriteForm').onchange=updateSpritePreview;$('spriteClip').onchange=updateSpritePreview;editorChoices();
@@ -625,16 +727,17 @@ function studioRender(){
 }
 function studioLibrary(){ $('stLibrary').replaceChildren(...studio.library.map((f,i)=>{const b=document.createElement('button'),c=document.createElement('canvas');c.width=64;c.height=64;studioThumb(c,f);b.append(c,document.createTextNode(String(i+1)));b.title='Adicionar este quadro à sequência';b.onclick=()=>{if(studio.frames.length>=256)return;studioEdit(()=>{studio.frames.push({...f});studio.selected=studio.frames.length-1;});};return b;}));}
 function studioChoices(resetCharacter=true){
- const chars=$('stTarget').value==='player'?{goku:'Goku',gogeta:'Gogeta'}:{vegeta:'Vegeta',saibaman:'Saibaman',cell:'Cell Perfeito'},old=$('stCharacter').value;
+ const chars=$('stTarget').value==='player'?{goku:'Goku',gogeta:'Gogeta',aang:'Aang'}:{vegeta:'Vegeta',saibaman:'Saibaman',cell:'Cell Perfeito'},old=$('stCharacter').value;
  if(resetCharacter){$('stCharacter').replaceChildren(...Object.entries(chars).map(([v,t])=>new Option(t,v)));if(chars[old])$('stCharacter').value=old;}
- const character=$('stCharacter').value,forms=character==='gogeta'?{ssj:'Super Saiyajin'}:enemyClips(character)?{base:'Base'}:{base:'Base',ssj:'Super Saiyajin'},form=$('stForm').value;$('stForm').replaceChildren(...Object.entries(forms).map(([v,t])=>new Option(t,v)));if(forms[form])$('stForm').value=form;
- const clips=enemyClips(character)||{idle:{name:'Postura / Idle'},hurt:{name:'Receber dano'},...CARDS},clip=$('stClip').value;$('stClip').replaceChildren(...Object.entries(clips).map(([v,c])=>new Option(c.name,v)));if(clips[clip])$('stClip').value=clip;
+ const character=$('stCharacter').value,forms=character==='gogeta'?{ssj:'Super Saiyajin'}:(character==='aang'||enemyClips(character))?{base:'Base'}:{base:'Base',ssj:'Super Saiyajin'},form=$('stForm').value;$('stForm').replaceChildren(...Object.entries(forms).map(([v,t])=>new Option(t,v)));if(forms[form])$('stForm').value=form;
+ const clips=(character==='aang'?AANG_CLIPS:enemyClips(character))||{idle:{name:'Postura / Idle'},hurt:{name:'Receber dano'},...CARDS},clip=$('stClip').value;$('stClip').replaceChildren(...Object.entries(clips).map(([v,c])=>new Option(c.name,v)));if(clips[clip])$('stClip').value=clip;
 }
 function studioSetEntry(entry){studio.frames=entry.frames.map(f=>studioFrame(entry,f));studio.library=structuredClone(studio.frames);studio.selected=0;studio.time=0;studio.playing=false;studio.undo=[];studio.redo=[];$('stMode').value=entry.mode||'loop';$('stScale').value=entry.scale||1;studioBuild();studio.dirty=false;studio.key=studioKey();studioLibrary();studioRender();}
 async function studioOriginal(){
  const character=$('stCharacter').value,form=$('stForm').value,clip=$('stClip').value,key=studioKey();await customSpritesReady;if(customSprites[key])return structuredClone(customSprites[key]);
  let im,frames;
  if(character==='saibaman'){await saibaReady;im=saibaArt;frames=(SAIBA_CLIPS[clip]||SAIBA_CLIPS.idle).frames.map(n=>{const f=saibaFrames[n];return {...f,duration:SAIBA_CLIPS[clip]?.ms||150,pivotX:f.pivot,pivotY:f.h};});}
+ else if(character==='aang'){await aangReady;im=aangArt;frames=aangSequence(clip).frames;}
  else if(character==='cell'){await cellReady;im=cellArt;const c=CELL_CLIPS[clip]||CELL_CLIPS.idle;frames=c.frames.map((id,i)=>({...cellFrames[id],duration:cellDuration(c,id),event:i===c.release?'release':''}));}
  else if(character==='gogeta'){await gogetaReady;im=gogetaSheet;const ff=clip==='transform'||clip==='gogeta'?gogetaMetadata.frames:[gogetaMetadata.frames.at(-1)];frames=ff.map(f=>({x:f.x,y:f.y,w:f.width,h:f.height,duration:f.duration}));}
  else if(character==='goku'&&clip==='idle'){await(form==='ssj'?ssjIdleReady:idleReady);im=form==='ssj'?ssjIdleSheet:idleSheet;frames=(form==='ssj'?ssjIdleMetadata:idleMetadata).frames.map(f=>({x:f.x,y:f.y,w:f.width,h:f.height,duration:f.duration}));}
@@ -644,7 +747,7 @@ async function studioOriginal(){
   im=new Image();im.src='/assets/goku-original.png';await im.decode();const name={strike:form==='ssj'?'ssjStrike':'strike',blast:form==='ssj'?'ssjFire':'kiBurst',beam:'ssjFire',superBeam:'ssjFire',charge:form==='ssj'?'ssjCharge':'charge',guard:'idle',evade:'evade',transform:'transform',gogeta:'transform',hurt:'hurt'}[clip]||'idle';const source=GOKU_CLIPS[name]||GOKU_CLIPS.idle,z=im.width/731,atlas=document.createElement('canvas');atlas.width=source.length*256;atlas.height=256;const ctx=atlas.getContext('2d');frames=[];
   source.forEach((f,i)=>{const w=Math.round(f[2]*z),h=Math.round(f[3]*z);ctx.drawImage(im,Math.round(f[0]*z),Math.round(f[1]*z),w,h,i*256,0,w,h);frames.push({x:i*256,y:0,w,h,duration:f[4]});});const data=ctx.getImageData(0,0,atlas.width,256);for(const f of frames){const seen=new Set(),queue=[];const add=(x,y)=>{if(x<0||y<0||x>=f.w||y>=f.h)return;const n=y*f.w+x;if(seen.has(n))return;seen.add(n);const k=(y*atlas.width+f.x+x)*4;if(data.data[k]>=244&&data.data[k+1]>=244&&data.data[k+2]>=244)queue.push([x,y]);};for(let x=0;x<f.w;x++){add(x,0);add(x,f.h-1);}for(let y=0;y<f.h;y++){add(0,y);add(f.w-1,y);}for(let j=0;j<queue.length;j++){const [x,y]=queue[j];data.data[(y*atlas.width+f.x+x)*4+3]=0;add(x-1,y);add(x+1,y);add(x,y-1);add(x,y+1);}}ctx.putImageData(data,0,0);im=atlas;
  }else{im=new Image();im.src='/assets/battle-atlas.png';await im.decode();const col=clip==='strike'?2:['beam','blast','charge','superBeam'].includes(clip)?3:1;frames=[{x:im.width/4*col,y:im.height/2,w:im.width/4,h:im.height/2,duration:180}];}
- const canvasHeight=Math.max(...frames.map(f=>f.h));const scale=character==='cell'?Math.max(.25,Math.min(3,canvasHeight*1.2/224)):character==='saibaman'?Math.min(3,canvasHeight*(clip==='charge'?5.8:clip==='beamFx'?3.5:4.5)/224):character==='gogeta'?360*.85/224:1;return {image:studioImageData(im),frames,canvasHeight,scale,sourceName:character+' · '+clip,mode:clip==='idle'?'loop':'once'};
+ const canvasHeight=Math.max(...frames.map(f=>f.h));const scale=character==='aang'?Math.max(.25,Math.min(3,canvasHeight*3.5/224)):character==='cell'?Math.max(.25,Math.min(3,canvasHeight*1.2/224)):character==='saibaman'?Math.min(3,canvasHeight*(clip==='charge'?5.8:clip==='beamFx'?3.5:4.5)/224):character==='gogeta'?360*.85/224:1;return {image:studioImageData(im),frames,canvasHeight,scale,sourceName:character+' · '+clip,mode:clip==='idle'?'loop':'once'};
 }
 async function studioLoad(){try{studioSetEntry(await studioOriginal());$('stStatus').textContent='Animação carregada. Selecione ou arraste quadros para editar.';}catch(e){$('stStatus').textContent=e.message;}}
 $('studioButton').onclick=async()=>{if(busy)return;$('stTarget').value=$('labActor').value;studioChoices();$('stCharacter').value=$('labActor').value==='player'?$('labPlayer').value:$('labOpponent').value;studioChoices(false);$('stForm').value=$('labActor').value==='player'?$('labForm').value:$('labEnemyForm').value;$('stClip').value=currentLabSkill();$('stMirror').checked=$('stTarget').value==='enemy';$('studioDialog').showModal();await studioLoad();await studioCapabilities();};
@@ -699,3 +802,6 @@ async function playStudioVisual(side,key,token,entry){const actor=$(side==='play
 async function executeStudioAbility(side,index,token,entry){const key=state[side].hand[index],other=side==='player'?'enemy':'player';await playStudioVisual(side,key,token,entry);if(token!==generation)return;const hp=state[other].hp;play(state,side,index);clearBattleFx();busy=false;render();$('effect').textContent=hp>state[other].hp?'−'+(hp-state[other].hp):CARDS[key].name;$('effect').classList.remove('show');void $('effect').offsetWidth;$('effect').classList.add('show');if(state.winner&&!labMode){$('resultTitle').textContent=state.winner==='player'?'Você superou seus limites!':'O oponente venceu.';$('resultText').textContent=`Treino encerrado em ${state.round} rounds.`;$('resultDialog').showModal();}}
 
 $('stNew').onclick=()=>{if(studio.dirty&&!confirm('Limpar o rascunho? Você pode desfazer depois.'))return;studioEdit(()=>{studio.frames=[];studio.selected=0;});};
+
+// A direct lab link can open the new playable roster without changing match defaults.
+if(labMode&&new URLSearchParams(location.search).get('player')==='aang'){$('labPlayer').value='aang';$('labForm').value='base';$('labActor').value='player';updateLabSkills();$('labSkill').value='airShield';reset();}

@@ -1,0 +1,255 @@
+;===============================================================================
+; INTELIGENCIA ARTIFICIAL:
+;===============================================================================
+[Statedef -3]
+
+[State -3, VarSet]
+type = VarSet
+trigger1 = Command = "AI_1"
+trigger2 = Command = "AI_2"
+trigger3 = Command = "AI_3"
+trigger4 = Command = "AI_4"
+trigger5 = Command = "AI_5"
+trigger6 = Command = "AI_6"
+trigger7 = Command = "AI_7"
+trigger8 = Command = "AI_8"
+trigger9 = Command = "AI_9"
+trigger10 = Command = "AI_10"
+trigger11 = Command = "AI_11"
+trigger12 = Command = "AI_12"
+trigger13 = Command = "AI_13"
+trigger14 = Command = "AI_14"
+trigger15 = Command = "AI_15"
+trigger16 = Command = "AI_16"
+trigger17 = Command = "AI_17"
+trigger18 = Command = "AI_18"
+trigger19 = Command = "AI_19"
+trigger20 = Command = "AI_20"
+v = 59
+value = 1
+
+[State -2, Defensa (Agachado a De Pie)]
+type = ChangeState
+triggerall = Var(59) = 1
+triggerall = Statetype != A
+triggerall = P2statetype != C
+triggerall = P2Movetype = A
+trigger1 = 1
+trigger1 = StateNo = 152
+value = 150
+
+
+
+[State -2, Air Recover]
+type = ChangeState
+value = 5210
+triggerall = Var(10) = 1
+triggerall = StateType = A
+triggerall = StateType != L
+triggerall = Pos Y < -20
+triggerall = Alive = 1
+trigger1 = CanRecover = 1
+trigger1 = StateNo = 5050
+trigger1 = Var(4) = [750,900]
+
+[State -3, Aire control]
+type = ChangeState
+triggerall = p2life != 0
+trigger1 = var(59) != 0 && var(21) > 120
+trigger1 = statetype = A && ctrl
+value = 610
+var (59) != 0
+var (21) > 120
+StateType = A
+Ctrl
+
+[state -3, Golpe 1]
+type = changestate
+value = 230
+triggerall = var(59) = 1
+triggerall = p2life != 0
+triggerall = p2statetype != A
+triggerall = statetype = S
+trigger1 = p2bodydist x <= 15
+trigger1 = p2statetype != A
+trigger1 = ctrl = 1
+trigger1 = random  >= 10
+
+
+[state -3, Golpe 2]
+type = changestate
+value = 240
+triggerall = var(59) = 1
+triggerall = p2life != 0
+triggerall = MoveType != H
+triggerall = p2statetype != A
+triggerall = statetype = S
+trigger1 = p2bodydist x <= 25
+trigger1 = p2statetype = S
+trigger1 = StateNo = 230
+trigger1 = MoveHit
+
+
+[state -3, golpe 3]
+type = changestate
+value = 250
+triggerall = var(59) = 1
+triggerall = p2life != 0
+triggerall = MoveType != H
+triggerall = p2statetype != A
+triggerall = statetype = S
+trigger1 = p2bodydist x <= 25
+trigger1 = p2statetype = S
+trigger1 = StateNo = 240
+trigger1 = MoveHit
+
+[state -3, golpe 4]
+type = changestate
+value = 410
+triggerall = var(59) = 1
+triggerall = p2life != 0
+triggerall = MoveType != H
+triggerall = p2statetype != A
+triggerall = statetype = C
+trigger1 = p2bodydist x <= 75
+trigger1 = p2statetype = S
+trigger1 = StateNo = 220
+trigger1 = MoveHit
+
+
+[state -3, Tierra 1]
+type = changestate
+value = 260
+triggerall = var(59) = 1
+triggerall = p2life != 0
+triggerall = p2statetype != A
+triggerall = statetype = S
+trigger1 = p2bodydist x <= 17
+trigger1 = p2statetype != A
+trigger1 = ctrl = 1
+
+
+
+[state -3, Tierra 2]
+type = changestate
+value = 270
+triggerall = var(59) = 1
+triggerall = p2life != 0
+triggerall = MoveType != H
+triggerall = power >= 350
+triggerall = p2statetype != A
+triggerall = statetype = S
+trigger1 = p2bodydist x <= 17
+trigger1 = p2statetype = S
+trigger1 = StateNo = 260
+trigger1 = MoveHit
+
+[state -2, Escudo de aire]
+type = changestate
+value = 1000
+triggerall = Var(59) = 1
+triggerall = P2life != 0
+triggerall = power >= 1000
+triggerall = StateType = S
+triggerall = ctrl = 1
+trigger1 = Random <= 200
+trigger1 = P2bodydist X >= 20
+trigger2 = ProjContact(1100) = 1
+trigger2 = random <= 200
+trigger3 = P2StateNo = 2017
+trigger3 = Random <= 200
+
+[state -2, Tornado de aire]
+type = changestate
+value = 1050
+triggerall = Var(59) = 1
+triggerall = P2life != 0
+triggerall = power >= 1000
+triggerall = StateType = S
+triggerall = ctrl = 1
+trigger1 = Random <= 200
+trigger1 = P2bodydist X >= 20
+trigger2 = ProjContact(1100) = 1
+trigger2 = random <= 200
+trigger3 = P2StateNo = 2017
+trigger3 = Random <= 200
+
+[state -2, Chorro de agua]
+type = changestate
+value = 1100
+triggerall = Var(59) = 1
+triggerall = P2life != 0
+triggerall = power >= 1000
+triggerall = StateType = S
+triggerall = ctrl = 1
+trigger1 = Random <= 200
+trigger1 = P2bodydist X >= 20
+trigger2 = random <= 200
+trigger3 = P2StateNo = 200
+trigger3 = Random <= 200
+
+[state -2, Patada de fuego]
+type = changestate
+value = 1150
+triggerall = Var(59) = 1
+triggerall = P2life != 0
+triggerall = power >= 1000
+triggerall = StateType = S
+triggerall = ctrl = 1
+trigger1 = Random <= 200
+trigger1 = P2bodydist X >= 20
+trigger2 = random <= 200
+trigger3 = P2StateNo = 200
+trigger3 = Random <= 200
+
+[state -2, Multiple Fuego]
+type = changestate
+value = 1200
+triggerall = Var(59) = 1
+triggerall = P2life != 0
+triggerall = power >= 1000
+triggerall = StateType = S
+triggerall = ctrl = 1
+trigger1 = Random <= 200
+trigger1 = P2bodydist X >= 20
+trigger2 = random <= 200
+trigger3 = P2StateNo = 2017
+trigger3 = Random <= 200
+
+[state -2, Muro Piedra]
+type = changestate
+value = 1250
+triggerall = Var(59) = 1
+triggerall = P2life != 0
+triggerall = power >= 1000
+triggerall = StateType = S
+triggerall = ctrl = 1
+trigger1 = Random <= 200
+trigger1 = P2bodydist X >= 20
+trigger2 = random <= 200
+trigger3 = P2StateNo = 2017
+trigger3 = Random <= 200
+
+[state -2, Final]
+type = changestate
+value = 2000
+triggerall = Var(59) = 1
+triggerall = P2life != 0
+triggerall = power >= 4000
+triggerall = StateType = S
+triggerall = ctrl = 1
+trigger1 = Random <= 200
+trigger1 = P2bodydist X >= 20
+trigger2 = random <= 200
+trigger3 = P2StateNo = 2017
+trigger3 = Random <= 200
+
+
+;This controller plays a sound everytime the player lands from a jump, or
+;from a back-dash.
+[State -3, Landing Sound]
+type = PlaySnd
+triggerall = Time = 1
+trigger1 = stateno = 52 ;Jump land
+trigger2 = stateno = 106 ;Run-back land
+value = 20, 2

@@ -1,0 +1,20 @@
+[Info]
+name="Avatar Aang"
+displayname="Aang"
+versiondate=25/09/2017
+mugenversion=06,14,2003
+author="Planeptune"
+pal.defaults=1,2
+[Files]
+sprite=aang.sff
+sound=Aang.snd
+anim=aang.air
+cmd=aang.cmd
+cns=aang.cns
+st=aang.cns
+stcommon=common1.cns
+pal1=Aang.act
+st1=AI.cns
+[Arcade]
+intro.storyboard=
+ending.storyboard=

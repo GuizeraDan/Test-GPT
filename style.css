@@ -94,3 +94,8 @@ canvas.kienzan-disc{position:absolute;width:128px;height:128px;z-index:9;image-r
 .cell-visible .cell-frames{display:block}.cell-visible .atlas-sprite,.cell-visible .gogeta-frames,.cell-visible .aura,.cell-visible:after,.custom-animation .cell-frames{display:none!important}
 .vegeta.cell-visible,.vegeta.cell-visible .fighter-name{transform:none}.cell-effect{position:absolute;z-index:8;pointer-events:none;image-rendering:pixelated}.visual-enemy-lab .hand-area{display:none}
 @media(max-width:600px){.cell-frames{width:232.5px;height:203.4px}}
+
+.aang-frames{display:none;position:absolute;left:50%;bottom:-6px;translate:-50% 0;width:277.5px;height:242.8px;z-index:4;pointer-events:none;image-rendering:pixelated}
+.aang-visible .aang-frames{display:block}.aang-visible .atlas-sprite,.aang-visible .goku-frames,.aang-visible .gogeta-frames,.aang-visible .aura,.aang-visible:after,.custom-animation .aang-frames{display:none!important}
+.aang-effect{position:absolute;z-index:8;pointer-events:none;image-rendering:pixelated}.aang-effect.additive{mix-blend-mode:screen}.aang-card-art{width:100%;height:112px;image-rendering:pixelated;background:radial-gradient(ellipse,#527963,#142a31)}.aang-card h3{font-size:15px}
+@media(max-width:600px){.aang-frames{width:232.5px;height:203.4px}}

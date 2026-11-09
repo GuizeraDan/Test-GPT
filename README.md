@@ -141,7 +141,7 @@ O canvas espelha a arte uma única vez para enfrentar o jogador à esquerda. O e
 
 ### Seletores independentes e biblioteca de sprites
 
-O laboratório tem painéis separados para o personagem jogável e o inimigo, cada um com personagem, forma inicial e habilidade/animação. O campo “Reproduzir animação de” escolhe qual lado age. Goku e Gogeta estão disponíveis como jogáveis; Vegeta, Saibaman e Cell Perfeito como inimigos. As formas disponíveis seguem os sprites existentes.
+O laboratório tem painéis separados para o personagem jogável e o inimigo, cada um com personagem, forma inicial e habilidade/animação. O campo “Reproduzir animação de” escolhe qual lado age. Goku, Gogeta e Aang estão disponíveis como jogáveis; Vegeta, Saibaman e Cell Perfeito como inimigos. As formas disponíveis seguem os sprites existentes.
 
 Em **Testar sprites → Sprites por personagem e forma**, escolha destino, personagem, forma e ação. Importe PNG/WebP transparente (uma pose ou grade com colunas/linhas/FPS) ou Aseprite RGBA com camadas simples e mesclagem normal. Arquivos Aseprite preservam quadros, posições e tempos. A arte deve olhar para a direita; o inimigo é espelhado automaticamente.
 
@@ -190,3 +190,16 @@ As demais sequências são interpretações visuais iniciais, ajustáveis em `CE
 | Provocação e recuo | 154–163 |
 
 Retratos, poses de costas, Cell Jr. e variantes extras estão preservados, mas não misturados à postura de combate do Cell Perfeito. **Testar sprites** e **Editor de animações** incluem o destino `cell/base/ação`; o Studio abre os quadros de cada sequência. Em Makankosappo, o marcador “Disparo” controla quando o raio sai após uma edição. Salvar e exportar usa o mesmo fluxo dos outros personagens.
+
+
+### Aang · personagem jogável no laboratório
+
+Abra `laboratorio.html?player=aang` ou escolha **Personagem jogável → Aang**. O laboratório muda para o lado do jogador e oferece 21 sequências: postura, caminhada, corrida, salto, defesa, dano, queda/recuperação, vitória, concentração, socos, chutes, terra, corte de ar, ataques aéreos, escudo de ar, tornado, água/gelo, erupção, combo de fogo, muro de rocha e Estado Avatar. As 13 técnicas também têm botões próprios abaixo da arena.
+
+Esta versão é para testar animações: o Aang não usa cartas de Goku nem recebe custos/dano inventados. O oponente continua selecionável; as técnicas do Aang exibem impactos visuais sem diminuir sua vida. A partida padrão continua Goku contra Vegeta. O Estado Avatar é um especial temporário com seis emissões de ar, seguido do retorno à postura; a única forma inicial disponível para Aang é Base.
+
+O pacote original, de autoria declarada **Planeptune** (25/09/2017), fica em `assets/aang-original/`, incluindo SFF, AIR, ACT, CMD, CNS, AI e SND. Os sons foram preservados como fonte, mas esta etapa não inclui sua reprodução. `python tools/export_aang.py` extrai sprites SFF v1, aplica a paleta ACT do personagem, mantém eixos, deslocamentos, espelhamentos e tempos AIR (60 ticks/s), e gera `aang-atlas.png/json`. Os sprites do personagem mantêm resolução nativa; os efeitos grandes usam 50% com nearest-neighbor. Os efeitos aditivos usam composição screen para evitar fundos pretos.
+
+`AANG_CLIPS` no `app.js` define sequências compostas e eventos. A adaptação mantém os tempos AIR dos gestos; pausas de preparação e poses sustentadas são explicitadas por `hold`. Deslocamentos e colisões do MUGEN são adaptados visualmente à arena por turnos; não se trata de executar o motor MUGEN. Projéteis têm trajetória até o alvo, os golpes físicos aproximam o personagem e todos os efeitos usam o relógio do laboratório (pausa, velocidade, avanço, reset e repetição).
+
+O **Editor de animações** e **Testar sprites** aceitam `aang/base/ação`. O Studio carrega os gestos já encadeados e os marcadores de disparo/impacto; ao salvar, preserva a associação com os efeitos da técnica. O salvamento local, pacote JSON e HTML portátil seguem o fluxo dos demais personagens. Ajustes de custo/dano e inclusão do Aang na partida normal ficam para uma etapa de gameplay.
