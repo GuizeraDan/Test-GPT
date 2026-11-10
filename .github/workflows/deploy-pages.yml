@@ -1,0 +1,70 @@
+name: Publicar jogo no GitHub Pages
+
+on:
+  push:
+    branches: [gh-pages]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: github-pages
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    permissions:
+      contents: read
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Obter o pacote publicado
+        uses: actions/checkout@v4
+        with:
+          ref: gh-pages
+          persist-credentials: false
+
+      - name: Verificar jogo e export Godot
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          import json, re, os, subprocess
+          for name in ['index.html', 'laboratorio.html', '.nojekyll',
+                       'godot/index.html', 'godot/index.js', 'godot/index.wasm',
+                       'godot/index.pck', 'godot/index.png',
+                       'godot/index.audio.worklet.js', 'godot/index.audio.position.worklet.js']:
+              assert Path(name).is_file(), f'Arquivo ausente: {name}'
+              assert name == '.nojekyll' or Path(name).stat().st_size > 0, f'Arquivo vazio: {name}'
+          html = Path('godot/index.html').read_text()
+          match = re.search(r'const GODOT_CONFIG = (\{[^\n]+\});', html)
+          assert match, 'Configuração do export Godot ausente'
+          config = json.loads(match.group(1))
+          for name, expected in config['fileSizes'].items():
+              assert Path('godot', name).stat().st_size == expected, f'Tamanho incorreto: {name}'
+          for name, magic in [('index.wasm', b'\x00asm'), ('index.pck', b'GDPC')]:
+              with Path('godot', name).open('rb') as stream:
+                  assert stream.read(4) == magic, f'Formato inválido: {name}'
+          commit = subprocess.check_output(['git', 'rev-parse', 'HEAD'], text=True).strip()
+          with open(os.environ['GITHUB_STEP_SUMMARY'], 'a') as summary:
+              summary.write(f'Pacote validado: `{commit}` (gh-pages).\n\nJogo anterior: `/`; laboratório anterior: `/laboratorio.html`; Godot: `/godot/`.\n')
+          print('Pacote completo e tamanhos do export Godot conferidos.')
+          PY
+
+      - name: Configurar Pages
+        uses: actions/configure-pages@v5
+
+      - name: Enviar site completo
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: .
+
+      - name: Publicar
+        id: deployment
+        uses: actions/deploy-pages@v4
