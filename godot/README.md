@@ -6,6 +6,8 @@ Primeira etapa da migração nativa. Regras e interface executam em GDScript; o 
 
 Publicação: https://guizeradan.github.io/Test-GPT/godot/
 
+Se esse endereço retornar 404, consulte o [procedimento de publicação por GitHub Actions](../docs/publicacao.md). O envio dos arquivos à branch não confirma sozinho a implantação do site.
+
 O laboratório abre com Goku × Cell. Escolha a habilidade e clique em **Reproduzir**, ou clique em uma carta. Para os movimentos do Cell, selecione **Reproduzir → Inimigo**. Pausa, avanço, velocidade e reinício estão na barra superior. **Partida por turnos** inicia Goku × Vegeta com cartas e CPU.
 
 O primeiro carregamento baixa cerca de 39 MB. Não abra o `index.html` exportado com `file://`: use a publicação ou um servidor HTTP.
