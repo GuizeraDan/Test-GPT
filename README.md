@@ -1,5 +1,17 @@
 # Kame Duel
-Protótipo de batalha de cartas por turnos para navegador, em português. Sem dependências externas de execução.
+Protótipo de batalha de cartas por turnos para navegador, em português.
+
+## Godot + Web · migração em andamento
+
+A primeira versão nativa em **Godot 4.6.3 / GDScript** já está em `godot/`, com export Web, partida Goku × Vegeta, dez cartas e laboratório de Goku/Cell. As especificações ficam em arquivos **`.md` na pasta [`specs/`](specs/README.md)**.
+
+- [Testar a versão Godot no navegador](https://guizeradan.github.io/Test-GPT/godot/)
+- [Abrir o projeto, gerar o export e executar os testes](godot/README.md)
+- [Consultar a situação e os limites da migração](specs/README.md)
+
+O editor completo de sprites, Aang e Saibaman continuam na versão JavaScript durante esta etapa. Os arquivos originais abaixo permanecem disponíveis para comparação e para continuar usando esses recursos. O jogo exportado executa no navegador; o editor Godot executa no ambiente de desenvolvimento.
+
+As instruções seguintes descrevem a versão JavaScript original, que não requer dependências externas de execução.
 
 ## Baixar pelo GitHub
 No repositório, clique em **Code → Download ZIP**, extraia o arquivo e abra `Laboratorio.html` para testar animações, ou `Kame-Duel.html` para jogar a partida. O HTML não precisa de servidor nem de instalação. Não abra o arquivo dentro do ZIP: extraia a pasta primeiro.

@@ -1,0 +1,12 @@
+// Oracle fixtures: the native port must reproduce the existing JS rules.
+import {writeFile} from 'node:fs/promises';
+import {CARDS,createGame,play,endTurn,beginBurst,resolveBurstHit} from '../game.js';
+const fixtures=[];
+function snapshot(s){const fighter=f=>({hp:f.hp,ki:f.ki,shield:f.shield,reaction:f.reaction,transformed:f.transformed,form:f.form||'base',hand:[...f.hand].sort(),deck:[...f.deck].sort(),discard:[...f.discard].sort()});return{player:fighter(s.player),enemy:fighter(s.enemy),turn:s.turn,round:s.round,actions:s.actions,winner:s.winner||'',pending:!!s.pendingBurst};}
+function add(name,s,ops){const initial=structuredClone(s);initial.player.form||='base';initial.enemy.form||='base';initial.winner||='';const expected=[];for(const op of ops){let result=null;if(op.kind==='play')result=play(s,op.side,op.index);if(op.kind==='end')endTurn(s,()=>.4);if(op.kind==='begin')result=beginBurst(s,op.side,op.index);if(op.kind==='impact')resolveBurstHit(s);expected.push({result,state:snapshot(s)});}fixtures.push({name,initial,ops,expected});}
+for(const key of Object.keys(CARDS))for(const side of ['player','enemy'])for(const transformed of [false,true])for(const defense of [0,1,2]){const s=createGame(()=>.4);s.turn=side;s[side].hand=[key];s[side].ki=8;s[side].transformed=transformed;s[side].form=transformed?'ssj':null;const target=s[side==='player'?'enemy':'player'];target.shield=defense===1?18:defense===2?7:0;target.reaction=defense===2?15:0;add(`${key}/${side}/${transformed}/${defense}`,s,[{kind:'play',side,index:0}]);}
+for(const [ki,actions] of [[0,2],[8,0],[3,1]]){const s=createGame(()=>.4);s.player.hand=['beam'];s.player.ki=ki;s.actions=actions;add(`invalid/${ki}/${actions}`,s,[{kind:'play',side:'player',index:0}]);}
+for(const hp of [100,6]){const s=createGame(()=>.4);s.player.hand=['blast','charge'];s.enemy.hp=hp;s.enemy.reaction=15;s.enemy.shield=7;add(`burst/${hp}`,s,[{kind:'begin',side:'player',index:0},{kind:'end'},{kind:'play',side:'player',index:0},...Array.from({length:4},()=>({kind:'impact'}))]);}
+for(const transformed of [true,false]){const s=createGame(()=>.4);s.enemy.transformed=transformed;s.enemy.shield=18;add('turn/'+transformed,s,[{kind:'end'},{kind:'end'}]);}
+const s=createGame(()=>.4);s.enemy.deck=[];s.enemy.hand=[];s.enemy.discard=['beam','strike'];add('recycle',s,[{kind:'end'}]);
+await writeFile(new URL('../godot/tests/parity.json',import.meta.url),JSON.stringify(fixtures));console.log(`${fixtures.length} JS oracle scenarios generated`);
